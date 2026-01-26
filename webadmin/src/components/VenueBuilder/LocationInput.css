@@ -1,0 +1,103 @@
+.location-card {
+  width: 100%;
+  /* max-width: 450px; */
+  font-family: sans-serif;
+  margin: 0 auto;
+}
+
+.card-header {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+}
+
+/* Container that holds both the map and the inputs */
+.map-wrapper {
+  position: relative; /* Essential for absolute positioning children */
+  height: 180px;
+  border-radius: 16px;
+  overflow: visible !important; /* Clips the map corners */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.pac-container {
+  z-index: 999999 !important;
+}
+
+/* The Google Map itself */
+.google-map-background {
+  width: 100%;
+  height: 100%;
+  position: absolute; /* Sits behind everything */
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* The Container for buttons and inputs */
+.ui-overlay {
+  position: relative;
+  z-index: 10; /* Sits on top of the map */
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: auto !important;/* Lets clicks pass through to map... */
+}
+
+/* Re-enable clicks for the inputs/buttons specifically */
+.toggle-container, .input-wrapper {
+  pointer-events: auto;
+}
+
+/* --- Same Styling as before below --- */
+
+.toggle-container {
+  background: rgba(255,255,255,0.85);
+  display: inline-flex;
+  border-radius: 8px;
+  padding: 4px;
+  width: fit-content;
+  backdrop-filter: blur(4px);
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+  border-radius: 6px;
+}
+
+.toggle-btn.active {
+  background: white;
+  color: black;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 14px 14px 40px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.icon-location {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+}

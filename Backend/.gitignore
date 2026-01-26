@@ -1,0 +1,12 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py,cover
+*.py[cod]
+*$py.class
+media/ 
+Backend/__pycache__/settings.cpython-313.pyc
+
+Backend/.env
