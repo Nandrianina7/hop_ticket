@@ -3,7 +3,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'http://192.168.1.198:8000', // Ex: 192.168.1.100:8000
+  baseURL: 'http://192.168.1.100:8000', // Ex: 192.168.1.100:8000
 });
 
 // ➤ Ajouter le token d'accès automatiquement
@@ -26,7 +26,7 @@ api.interceptors.response.use(
 
       const refresh = await AsyncStorage.getItem('refresh');
       try {
-        const response = await axios.post('http://192.168.1.198:8000/accounts/mobile/token/refresh/', {
+        const response = await axios.post('http://192.168.1.100:8000/accounts/mobile/token/refresh/', {
           refresh: refresh,
         });
 

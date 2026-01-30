@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
 import { useState, useRef, useEffect } from 'react';
 import logo from '../assets/hoplogo.jpeg';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.198:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.100:8000';
 
 const EventInfo = ({ open, handleClose, event, onSave, type }) => {
   const defaultPrices = {

@@ -503,18 +503,29 @@ export default function EventDetail() {
 const time = formatTime(event.date);
 const dateLong = formatDateLong(event.date);
   const dateShort = formatDateShort(event.date);
-  const days = daysRemaining(event.date);
-  const daysLabel =
-  days == null
-      ? null
-      : days > 1
-      ? `${days} jours`
-      : days === 1
-      ? `Demain`
-      : days === 0
-      ? "Aujourd'hui"
+  // const days = daysRemaining(event.date);
+  // const daysLabel =
+  // days == null
+  //     ? null
+  //     : days > 1
+  //     ? `${days} jours`
+  //     : days === 1
+  //     ? `Demain`
+  //     : days === 0
+  //     ? "Aujourd'hui"
 
-      : 'Terminé';
+  //     : 'Terminé';
+      // Calcul du label des jours restants
+        const days = daysRemaining(event.date);
+
+        let daysLabel: string | null = null;
+
+        if (days !== null) {
+          if (days > 1) daysLabel = `${days} jours`;
+          else if (days === 1) daysLabel = 'Demain';
+          else if (days === 0) daysLabel = "Aujourd'hui";
+          else daysLabel = 'Terminé';
+        }
 
       
 
@@ -575,7 +586,7 @@ const dateLong = formatDateLong(event.date);
                   />
                 <View style={styles.imageOverlay} />
                 
-                {/* Badge jours restants */}
+                {/* Badge jours restants
                 {daysLabel && (
                   <View style={[
                     styles.daysBadge,
@@ -585,7 +596,20 @@ const dateLong = formatDateLong(event.date);
                     <Text style={styles.daysBadgeText}>{daysLabel}</Text>
                   </View>
                 )}
-              </View>
+              </View> */}
+              {/* Badge jours restants */}
+              {daysLabel && (
+                <View
+                  style={[
+                    styles.daysBadge,
+                    days !== null && days === 0 && styles.todayBadge,
+                    days !== null && days < 0 && styles.expiredBadge,
+                  ]}
+                >
+                  <Text style={styles.daysBadgeText}>{daysLabel}</Text>
+                </View>
+              )}
+            </View>
             )}
 
             <Card.Content style={styles.cardContent}>

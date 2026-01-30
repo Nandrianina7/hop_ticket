@@ -138,7 +138,7 @@ const getCategoryLabel = (categoryName: string) => {
     if (item.image) {
       const imageUrl = item.image.startsWith('http') 
         ? item.image 
-        : `http://192.168.1.198:8000${item.image}`;
+        : `http://192.168.1.100:8000${item.image}`;
       return { uri: imageUrl };
     }
     return require('../../../assets/images/pop.jpg');

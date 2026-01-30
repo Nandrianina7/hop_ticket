@@ -2,26 +2,32 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import type { MovieSession } from '../types';
+
+// import type { MovieSession } from "@/types/MovieSession";
+// import type { MovieSession } from '../types';
+
+
 
 const { width } = Dimensions.get('window');
 
-interface MovieSession {
-  id: number;
-  start_time: string;
-  end_time: string;
-  base_price: number | string; // Peut être number ou string
-  hall: {
-    id: number;
-    name: string;
-    screen_type: string;
-    base_price: number | string; // Peut être number ou string
-    cinema: {
-      id: number;
-      name: string;
-      city: string;
-    };
-  };
-}
+// interface MovieSession {
+//   id: number;
+//   start_time: string;
+//   end_time: string;
+//   base_price: number | string; // Peut être number ou string
+//   hall: {
+//     id: number;
+//     name: string;
+//     screen_type: string;
+//     base_price: number | string; // Peut être number ou string
+//     cinema: {
+//       id: number;
+//       name: string;
+//       city: string;
+//     };
+//   };
+// }
 
 interface DateAndTimeSectionProps {
   selectedSession: MovieSession | null;

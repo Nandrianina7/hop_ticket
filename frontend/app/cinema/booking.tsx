@@ -23,53 +23,55 @@ import Stepper from './components/Stepper';
 import TaxiStep from './components/TaxiStep';
 import FoodStep from './components/FoodStep';
 import PaymentStep from './components/PaymentStep';
+import { MD3Theme } from 'react-native-paper';
+import type { MovieSession, Seat, CinemaHall  } from './types';
 
 import { Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
 
-interface Cinema {
-  id: number;
-  name: string;
-  city: string;
-}
+// interface Cinema {
+//   id: number;
+//   name: string;
+//   city: string;
+// }
 
-interface Seat {
-  id: string;  // Composite ID: "configId-row-col"
-  rows: string;
-  cols: string;
-  seat_type: string;
-  price_multiplier: number;
-  is_available: boolean;
-  is_vip?: boolean;
-  is_disabled?: boolean;
-  is_reserved?: boolean;
-}
+// interface Seat {
+//   id: string;  // Composite ID: "configId-row-col"
+//   rows: string;
+//   cols: string;
+//   seat_type: string;
+//   price_multiplier: number;
+//   is_available: boolean;
+//   is_vip?: boolean;
+//   is_disabled?: boolean;
+//   is_reserved?: boolean;
+// }
 
-interface CinemaHall {
-  id: number;
-  name: string;
-  screen_type: string;
-  base_price: number;
-  cinema: Cinema;
-}
+// interface CinemaHall {
+//   id: number;
+//   name: string;
+//   screen_type: string;
+//   base_price: number;
+//   cinema: Cinema;
+// }
 
-interface MovieSession {
-  id: number;
-  start_time: string;
-  end_time: string;
-  base_price: number;
-  hall: CinemaHall;
-  cinema_name?: string;
-  cinema_city?: string;
-  movie: {
-    id: number;
-    title: string;
-    duration: number;
-  };
-}
+// interface MovieSession {
+//   id: number;
+//   start_time: string;
+//   end_time: string;
+//   base_price: number;
+//   hall: CinemaHall;
+//   cinema_name?: string;
+//   cinema_city?: string;
+//   movie: {
+//     id: number;
+//     title: string;
+//     duration: number;
+//   };
+// }
 
-const STEPS = ['Sièges','Restauration', 'Paiement'];
+const STEPS = ['Sièges', 'Taxi', 'Restauration', 'Paiement' ];
 
 export default function BookingScreen() {
   const theme = useTheme();
@@ -162,7 +164,8 @@ export default function BookingScreen() {
   const calculateTotalPrice = () => {
     if (!selectedSession) return 0;
     
-    const basePrice = selectedSession.base_price || selectedSession.hall.base_price;
+    // const basePrice = selectedSession.base_price || selectedSession.hall.base_price;
+      const basePrice = Number(selectedSession.base_price || selectedSession.hall.base_price || 0);
     
     return selectedSeats.reduce((total, seatId) => {
       const seat = seats.find(s => s.id === seatId);
@@ -362,7 +365,7 @@ export default function BookingScreen() {
               </View>
             </View>
 
-            <ScreenSection theme={theme} />
+            <ScreenSection />
             
             {loading ? (
               <View style={[styles.centerContent, { padding: 20 }]}>
@@ -378,7 +381,7 @@ export default function BookingScreen() {
                 onSeatSelect={toggleSeat}
                 theme={theme}
                 loading={loading}
-                basePrice={selectedSession?.base_price || selectedSession?.hall?.base_price || 10}
+                basePrice={Number(selectedSession?.base_price || selectedSession?.hall?.base_price || 10)}
               />
             )}
             
@@ -391,16 +394,16 @@ export default function BookingScreen() {
           </>
         );
 
-      // case 1: // Taxi
-      //   return (
-      //     <TaxiStep
-      //       taxiOption={taxiOption}
-      //       setTaxiOption={setTaxiOption}
-      //       theme={theme}
-      //     />
-      //   );
+      case 1: // Taxi
+        return (
+          <TaxiStep
+            taxiOption={taxiOption}
+            setTaxiOption={setTaxiOption}
+            theme={theme}
+          />
+        );
 
-      case 1: // Restauration
+      case 2: // Restauration
         return (
           <FoodStep
             foodItems={foodItems}
@@ -409,7 +412,7 @@ export default function BookingScreen() {
           />
         );
 
-      case 2: // Paiement
+      case 3: // Paiement
         return (
           <PaymentStep
             totalPrice={calculateTotalPrice()}

@@ -13,24 +13,39 @@ export interface CinemaHall {
   cinema: Cinema; // Ajoutez cette propriété
 }
 
-interface MovieSession {
+//  interface MovieSession {
+//   id: number;
+//   start_time: string;
+//   end_time: string;
+//   base_price: number;
+//   hall: CinemaHall;
+//   cinema_name?: string;
+//   cinema_city?: string;
+//   movie: {
+//     id: number;
+//     title: string;
+//     duration: number;
+//   };
+//   // Ajouter ces champs si disponibles
+//   date?: string;
+//   available_dates?: string[];
+//   available_times?: string[];
+// }
+// types.ts
+export interface MovieSession {
   id: number;
   start_time: string;
   end_time: string;
-  base_price: number;
+  base_price: number | string;
   hall: CinemaHall;
+  movie: Movie;
   cinema_name?: string;
   cinema_city?: string;
-  movie: {
-    id: number;
-    title: string;
-    duration: number;
-  };
-  // Ajouter ces champs si disponibles
   date?: string;
   available_dates?: string[];
   available_times?: string[];
 }
+
 
 export interface Movie {
   id: number;
@@ -63,4 +78,6 @@ export interface Seat {
   is_available: boolean;
   is_vip?: boolean;
   is_disabled?: boolean;
+  is_reserved?: boolean;
+  
 }
