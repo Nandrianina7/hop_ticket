@@ -20,9 +20,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.100:8000';
 
 const EventInfo = ({ open, handleClose, event, onSave, type }) => {
   const defaultPrices = {
-    // VIP: { price: '', total: '' },
-    // BRONZE: { price: '', total: '' },
-    // ARGENT: { price: '', total: '' },
+    VIP: { price: '', total: '' },
+    BRONZE: { price: '', total: '' },
+    ARGENT: { price: '', total: '' },
     PUBLIC: { price: '', total: '' },
   };
 

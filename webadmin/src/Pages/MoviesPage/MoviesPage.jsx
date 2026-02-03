@@ -310,7 +310,7 @@ const MoviesPage = () => {
             >
               Ajouter un film
             </Button>
-            {/* <PromocodeForm btnText={'Add new promo code'} type={'create'} onSave={add_promocode}/> */}
+            <PromocodeForm btnText={'Add new promo code'} type={'create'} onSave={add_promocode}/>
           <MoviesForm
             onSave={add_movies}
             open={openForm}

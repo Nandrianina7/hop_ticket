@@ -274,6 +274,7 @@ export default function EventDetail() {
       //     console.log(`Catégorie: ${categoryName} (no tier), Quantité: ${count}`);
       //   }
       // });
+      
 
  for (const [categoryName, count] of Object.entries(counts)) {
   const tier = priceTiers.find((t) => t.tier_type === categoryName);

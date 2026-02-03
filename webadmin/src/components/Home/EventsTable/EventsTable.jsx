@@ -45,6 +45,7 @@ const EventsTable = ({ data, onUpdate, onDelete, loading = false, onSaveChange }
     image: null,
     location_name:''
   });
+  console.log("PRICE TIERS:", selectedData.price_tiers);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 

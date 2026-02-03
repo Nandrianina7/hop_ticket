@@ -127,7 +127,6 @@ export const registerUser = async (userData: {
 };
 
 
-
 // Fonction pour obtenir le token d'accès
 export const getAuthToken = async (): Promise<string | null> => {
   try {

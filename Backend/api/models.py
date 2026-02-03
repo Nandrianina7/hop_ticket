@@ -119,12 +119,12 @@ class EventRating(models.Model):
         unique_together = ('event', 'customer') 
 
 class PriceTier(models.Model):
-    # TICKET_TYPES = [
-    #     ('VIP', 'VIP'),
-    #     ('BRONZE', 'Bronze'),
-    #     ('ARGENT', 'Argent'),
-    #     ('PUBLIC', 'Public'),
-    # ]
+    TICKET_TYPES = [
+        ('VIP', 'VIP'),
+        ('BRONZE', 'Bronze'),
+        ('ARGENT', 'Argent'),
+        ('PUBLIC', 'Public'),
+    ]
     
     event = models.ForeignKey(
         Event,

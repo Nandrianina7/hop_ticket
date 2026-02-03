@@ -78,13 +78,29 @@ type VenuePlanData = {
 
 interface InteractiveVenuePlanProps {
   planData: VenuePlanData;
+  priceTiers?: {
+    tier_type: string;
+    price: number;
+    available_quantity: number;
+  }[];
   onSeatSelect?: (seatIds: string[]) => void;
 }
 
+// Couleurs par type de ticket
+const TICKET_TIERS: Record<string, string> = {
+  VIP: '#ff6b6b',
+  Argent: '#45b7d1',
+  Bronze: '#feca57',
+  Public: '#96ceb4',
+};
+
+
 const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({ 
   planData, 
+  priceTiers,
   onSeatSelect 
 }) => {
+  
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   
@@ -92,6 +108,15 @@ const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({
   const [scale, setScale] = useState(0.5);
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
+
+   // ✅ ICI EXACTEMENT
+  const priceMap = React.useMemo(() => {
+    const map: Record<string, number> = {};
+    priceTiers?.forEach(tier => {
+      map[tier.tier_type] = tier.price;
+    });
+    return map;
+  }, [priceTiers]);
   
   const scaleValue = useRef(new Animated.Value(0.5)).current;
   const translateXValue = useRef(new Animated.Value(0)).current;
@@ -117,23 +142,44 @@ const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({
     });
   };
 
-  const getSeatColor = (seat: Seat) => {
-    if (selectedSeats.includes(seat.id)) return '#ff5722'; // Selected
-    if (seat.status === 'Occupied') return '#757575'; // Occupied
-    if (seat.category) {
-      const category = planData.categories.find(cat => cat.name === seat.category);
-      return category?.color || '#1976d2';
-    }
-    return '#1976d2'; // Default available
-  };
+  const getSeatPrice = (seat: Seat) => {
+  if (!seat.category) return 0;
+  return priceMap[seat.category] ?? 0;
+};
 
-  const getSeatTextColor = (seat: Seat) => {
-    if (seat.category) {
-      const category = planData.categories.find(cat => cat.name === seat.category);
-      return category?.textColor || '#fff';
-    }
-    return '#fff';
-  };
+    const getSeatColor = (seat: Seat) => {
+      if (selectedSeats.includes(seat.id)) return '#ff5722'; // Selected
+      if (seat.status === 'Occupied') return '#757575'; // Occupied
+
+      if (seat.category) {
+        // Si le category match un tier connu, prendre sa couleur
+        if (TICKET_TIERS[seat.category]) return TICKET_TIERS[seat.category];
+        // Sinon fallback sur la couleur définie dans planData
+        const category = planData.categories.find(cat => cat.name === seat.category);
+        return category?.color || '#1976d2';
+      }
+
+      return '#1976d2'; // Default available
+    };
+
+
+  // const getSeatColor = (seat: Seat) => {
+  //   if (selectedSeats.includes(seat.id)) return '#ff5722'; // Selected
+  //   if (seat.status === 'Occupied') return '#757575'; // Occupied
+  //   if (seat.category) {
+  //     const category = planData.categories.find(cat => cat.name === seat.category);
+  //     return category?.color || '#1976d2';
+  //   }
+  //   return '#1976d2'; // Default available
+  // };
+
+  // const getSeatTextColor = (seat: Seat) => {
+  //   if (seat.category) {
+  //     const category = planData.categories.find(cat => cat.name === seat.category);
+  //     return category?.textColor || '#fff';
+  //   }
+  //   return '#fff';
+  // };
 
   const onPinchEvent = Animated.event(
     [{ nativeEvent: { scale: scaleValue } }],
@@ -214,7 +260,7 @@ const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({
         disabled={isOccupied}
         activeOpacity={0.7}
       >
-        <Text
+        {/* <Text
           style={[
             styles.seatLabel,
             {
@@ -224,7 +270,17 @@ const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({
           ]}
         >
           {seat.label}
+        </Text> */}
+        <Text style={styles.seatLabel}>
+          {seat.label}
         </Text>
+
+        {seat.category && (
+          <Text style={styles.seatPrice}>
+            {getSeatPrice(seat)} Ar
+          </Text>
+        )}
+
       </TouchableOpacity>
     );
   };
@@ -304,6 +360,14 @@ const InteractiveVenuePlan: React.FC<InteractiveVenuePlanProps> = ({
               <Text style={styles.legendText}>{category.name}</Text>
             </View>
           ))}
+          {/* Légende VIP / Argent / Bronze / Public */}
+            {Object.keys(TICKET_TIERS).map(tier => (
+              <View key={tier} style={styles.legendItem}>
+                <View style={[styles.legendColor, { backgroundColor: TICKET_TIERS[tier] }]} />
+                <Text style={styles.legendText}>{tier}</Text>
+              </View>
+            ))}
+            
           <View style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: '#757575' }]} />
             <Text style={styles.legendText}>Occupied</Text>
@@ -484,6 +548,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  seatPrice: {
+  fontSize: 8,
+  color: '#fff',
+  marginTop: -2,
+},
+
 });
 
 export default InteractiveVenuePlan;'use client';

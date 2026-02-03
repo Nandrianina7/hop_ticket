@@ -2,6 +2,14 @@ import { Button } from '@mui/material';
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { Stage, Layer, Group, Rect, Text, Circle, Transformer } from 'react-konva';
 
+// Mapping pour les types de ticket et leur couleur
+const TICKET_TIERS = {
+  VIP: '#ff6b6b',
+  Argent: '#45b7d1',
+  Bronze: '#feca57',
+  Public: '#96ceb4'
+};
+
 /**
  * SeatingEditor - Final Fixed Version
  * Fixes: Zoom State, Spacebar Scoping, Input Typing, and Dialog Visibility
@@ -30,7 +38,7 @@ const menuItemStyle = {
   fontSize: '14px'
 };
 
-const ContextMenu = ({ x, y, sectionType, onDuplicate, onEdit, onFillWithSeats, onDelete, onChangeColor, onClose }) => {
+const ContextMenu = ({ x, y, sectionType, onDuplicate, onEdit, onFillWithSeats, onDelete, onChangeColor, onChangeTier, onClose }) => {
   return (
     <div
       style={{
@@ -53,6 +61,18 @@ const ContextMenu = ({ x, y, sectionType, onDuplicate, onEdit, onFillWithSeats, 
       )}
       <div onClick={onChangeColor} style={menuItemStyle}>🎨 Changer de couleur</div>
       <div onClick={onDelete} style={{ ...menuItemStyle, color: '#dc3545' }}>🗑️ supprimer {sectionType === 'label' ? 'Label' : 'Section'}</div>
+       <div style={{ ...menuItemStyle, fontWeight: 'bold', cursor: 'default' }}>
+        🎟️ Type de ticket :
+        {Object.keys(TICKET_TIERS).map((tier) => (
+          <div
+            key={tier}
+            style={{ ...menuItemStyle, paddingLeft: '20px' }}
+            onClick={() => onChangeTier(tier)}
+          >
+            {tier}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -195,6 +215,26 @@ const SeatingEditor = React.forwardRef(({
       setLayout(initialLayout);
       }
   }, [initialLayout]);
+
+      const handleChangeTier = useCallback((sectionId, tier) => {
+      const newLayout = { ...layout };
+      const sectionIndex = newLayout.sections.findIndex(s => s.id === sectionId);
+      if (sectionIndex !== -1) {
+        // Change la couleur de la section
+        newLayout.sections[sectionIndex].color = TICKET_TIERS[tier];
+
+        // Change la couleur de tous les seats dans cette section
+        newLayout.sections[sectionIndex].seats = newLayout.sections[sectionIndex].seats.map(seat => ({
+          ...seat,
+          color: TICKET_TIERS[tier]
+        }));
+
+        setLayout(newLayout);
+        if (onLayoutChange) onLayoutChange(newLayout);
+      }
+      setContextMenu(null); // fermer le menu après sélection
+    }, [layout, onLayoutChange]);
+
 
   const [selectedId, setSelectedId] = useState(null);
   const [scale, setScale] = useState(initialLayout?.scale || 1);
@@ -748,7 +788,8 @@ const SeatingEditor = React.forwardRef(({
                     x={finalX}
                     y={finalY}
                     radius={seat.seatSize}
-                    fill="#fff"
+                    // fill="#fff"
+                    fill={seat.color || '#fff'} // si seat.color existe, on l'utilise
                     stroke="#333"
                     strokeWidth={1}
                     draggable={tool === 'select' && !isSpacePressed}
@@ -802,6 +843,8 @@ const SeatingEditor = React.forwardRef(({
               onCancel: () => setColorPickerDialog(null)
             });
           }}
+          onChangeTier={(tier) => handleChangeTier(contextMenu.sectionId, tier)}
+          
           onClose={() => setContextMenu(null)}
         />
       )}
