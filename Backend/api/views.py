@@ -579,7 +579,6 @@ class EventSiteView(APIView):
      try:
         user_email = str(request.user)
         user = Admin.objects.get(email=user_email)
-
         if user.is_superuser or user.is_staff:
           eventSite = EventPlan.objects.all()
         else:

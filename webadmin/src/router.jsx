@@ -18,6 +18,8 @@ import VenuePlan from './Pages/VenuePlan/VenuePlan';
 import EventLayout from './Pages/EventLayout/EventLayout';
 import EventListingLayout from './Pages/EventListingLayout/EventListingLayout';
 import TestPlayer from './components/Home/testPlayer/testPlayer';
+import Organizators from './Pages/Organizator';
+
 
 export const router = createHashRouter([
   {
@@ -43,6 +45,7 @@ export const router = createHashRouter([
           { path: 'plan', element: <VenuePlan /> },
           { path: 'event-layout', element: <EventLayout /> },
           { path: 'event-listing', element: <EventListingLayout /> },
+          { path: 'history', element: <Organizators /> },
         ],
       },
     ],
