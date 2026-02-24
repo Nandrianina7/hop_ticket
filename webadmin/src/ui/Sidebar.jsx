@@ -13,6 +13,7 @@ import {
   Menu as MenuIcon,
   ChevronLeft,
   LivingOutlined,
+  History,
 } from '@mui/icons-material';
 import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
 import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
@@ -30,17 +31,18 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
 
   const itemsForAdmin = [
     { icon: <Dashboard />, text: 'Dashboard', path: '/home' },
-    { icon: <Event />, text: 'Events', path: '/event' },
-    { icon: <People />, text: 'Customers', path: '/constumers' },
+    { icon: <Event />, text: 'Evenement', path: '/event' },
+    { icon: <People />, text: 'Clients', path: '/constumers' },
     {
       icon: <TvOutlined />,
       text: 'Cinema',
       path: '/cinema',
       children: [
-        { text: 'Movies', path: '/cinema/movies', icon: <Movie /> },
+        { text: 'Films', path: '/cinema/movies', icon: <Movie /> },
         { text: 'Halls', path: '/cinema/halls', icon: <House /> },
       ],
     },
+    { icon: <History />, path: '/history', text: 'Organisateur' },
   ];
 
   const itemsForOrganizer = [

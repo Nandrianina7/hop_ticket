@@ -1,11 +1,29 @@
 from rest_framework import serializers
 from . import models
 from .models import Customer
+from api.models import Event
+ 
+from rest_framework import serializers
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = [
+            "id",
+            "name",
+            "date",
+            "venue",
+            "tickets_sold",
+            "average_rating",
+            "description",
+        ]
 
 class AdminSerialiser(serializers.ModelSerializer):
+  event_count = serializers.IntegerField(read_only=True)
+  event = EventSerializer(many=True, read_only=True)
   class Meta:
     model = models.Admin
-    fields = ['id', 'email', 'full_name', 'phone', 'role', 'created_at']
+    fields = ['id', 'email', 'full_name', 'phone', 'role', 'created_at', 'event_count', "event"]
 
 
 class CustomerRegistrationSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.permissions import IsAuthenticated
@@ -383,3 +383,28 @@ class CheckDualUserAPIView(APIView):
             "customer_exists": customer_exists,
             "email_checked": email,
         })
+
+from django.db.models import Count
+class AllOrganisatorView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AdminSerialiser
+    def get_queryset(self):
+        user = self.request.user
+
+        if not (user.is_superuser or user.is_staff):
+            return Admin.objects.none()
+        return Admin.objects.filter(
+                role__in=['Organizer', 'Event_organizer']
+            ).annotate(event_count=Count('event')).prefetch_related('event')
+    
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        return Response({
+            "success": True,
+            "data": response.data,
+            "message": "Organizers retrieved successfully",
+            "count": len(response.data)
+        })
+       
+
