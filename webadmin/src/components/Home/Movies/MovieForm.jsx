@@ -45,7 +45,6 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
     trailer_url: '',
   };
 
-  
   const [selectedFile, setSelectedFile] = React.useState(null);
   const [posterFile, setPosterFile] = React.useState(null);
   const fileInputRef = React.useRef(null);
@@ -61,7 +60,7 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
           title: '',
           description: '',
           duration: '',
-          release_date:new Date(),
+          release_date: new Date(),
           genre: '',
           director: '',
           cast: '',
@@ -77,7 +76,7 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
     }
   }, [initialData]);
 
- useEffect(() => {
+  useEffect(() => {
     if (!open) return;
     const base = initialData ?? defaults;
     setMovieData({
@@ -158,7 +157,9 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5">{type === 'update' ? 'modification de film' : 'ajout de film'}</Typography>
+          <Typography variant="h5">
+            {type === 'update' ? 'modification de film' : 'ajout de film'}
+          </Typography>
           <IconButton onClick={onClose}>
             <Close />
           </IconButton>
@@ -187,7 +188,12 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
               label: 'Date de sortie (YYYY-MM-DD)',
               type: 'date',
             },
-            { name: 'director', value: movieData.director || '', label: 'Réalisateur', type: 'text' },
+            {
+              name: 'director',
+              value: movieData.director || '',
+              label: 'Réalisateur',
+              type: 'text',
+            },
             { name: 'cast', value: movieData.cast || '', label: 'Casting', type: 'text' },
             {
               name: 'trailer_url',
@@ -195,7 +201,7 @@ const MoviesForm = ({ onSave, initialData, type, onClose, open }) => {
               label: 'URL de la bande-annonce',
               type: 'url',
             },
-          ].map((item, index) => 
+          ].map((item, index) =>
             item.name === 'release_date' ? (
               <DatePicker
                 key={`release-${index}`}

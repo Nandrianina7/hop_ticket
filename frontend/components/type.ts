@@ -20,6 +20,7 @@ export type Section = {
   rotation: number;
   seats: Seat[];
   type: "section" | "label";
+  tier: string;
 };
 
 export type SeatingLayout = {

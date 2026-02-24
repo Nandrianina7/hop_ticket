@@ -35,7 +35,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
   const meassage = [
     { title: 'Organisez vos evenements', subtitle: '' },
     { title: 'Suivez les ventes de billet', subtitle: '' },
-    { title: 'Simplifiez l\'organisation', subtitle: '' },
+    { title: "Simplifiez l'organisation", subtitle: '' },
   ];
 
   const handleCloseDialog = () => {
@@ -129,7 +129,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
             <Stack direction="column" spacing={0.2}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  {['tous','Evenements passés', 'Avenir'].map((item) => (
+                  {['tous', 'Evenements passés', 'Avenir'].map((item) => (
                     <Chip
                       label={item}
                       key={item}

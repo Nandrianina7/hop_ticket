@@ -10,7 +10,6 @@ import {
   Alert,
   Fade,
   CircularProgress,
-
 } from '@mui/material';
 import { TheaterComedy, LocationOn, Phone, Email, Schedule } from '@mui/icons-material';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
@@ -69,9 +68,8 @@ const CinemaForm = ({ onSave }) => {
   };
 
   const onCreateCinema = async () => {
-    formData.opening_hours = openingTime.format('hh:mm A') + " - " + closingTime.format('hh:mm A');
+    formData.opening_hours = openingTime.format('hh:mm A') + ' - ' + closingTime.format('hh:mm A');
     if (!validateForm()) return;
-
 
     setIsSubmitting(true);
     try {
@@ -199,36 +197,36 @@ const CinemaForm = ({ onSave }) => {
               />
             </Grid>
           ))}
-          <Grid key={"opening_hours"} sx={{ width: '100%' }}>
+          <Grid key={'opening_hours'} sx={{ width: '100%' }}>
             <TimePicker
               fullWidth
               label="heures d'ouverture"
               value={openingTime}
               onChange={handleOpeningTimeChange}
               ampm={false}
-                slotProps={{
-                  textField: {
-                    size: 'fullWidth',
-                    sx: { borderRadius: 2, width: '100%' },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid key={"closing_hours"} sx={{ width: '100%' }}>
+              slotProps={{
+                textField: {
+                  size: 'fullWidth',
+                  sx: { borderRadius: 2, width: '100%' },
+                },
+              }}
+            />
+          </Grid>
+          <Grid key={'closing_hours'} sx={{ width: '100%' }}>
             <TimePicker
               fullWidth
               value={closingTime}
               onChange={handleClosingTimeChange}
               label="heures de fermeture"
               ampm={false}
-                slotProps={{
-                  textField: {
-                    size: 'fullWidth',
-                    sx: { borderRadius: 2, width: '100%' },
-                  },
-                }}
-              />
-            </Grid>  
+              slotProps={{
+                textField: {
+                  size: 'fullWidth',
+                  sx: { borderRadius: 2, width: '100%' },
+                },
+              }}
+            />
+          </Grid>
         </Grid>
 
         <Box sx={{ mt: 4, textAlign: 'center' }}>

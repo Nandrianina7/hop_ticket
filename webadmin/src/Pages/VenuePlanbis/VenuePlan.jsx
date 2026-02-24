@@ -4,8 +4,8 @@ import api from '../../api/api';
 import { useEffect, useState } from 'react';
 import VenuePlanView from '../../components/VenueBuilder/VenuePlanVIew';
 import VenuePlanBuilder from '../../components/VenueBuilder/VenueBuilder';
-import SeatToolkit from "@mezh-hq/react-seat-toolkit";
-import "@mezh-hq/react-seat-toolkit/styles";
+import SeatToolkit from '@mezh-hq/react-seat-toolkit';
+import '@mezh-hq/react-seat-toolkit/styles';
 
 const VenuePlan = () => {
   const navigate = useNavigate();
@@ -105,7 +105,7 @@ const VenuePlan = () => {
             <Tab key={plan.id} label={plan.site_name} />
           ))}
         </Tabs>
-        
+
         <Box sx={{ ml: 2 }}>
           <Button variant="outlined" onClick={() => navigate('/event-layout')}>
             Create a new venu plan
@@ -121,16 +121,16 @@ const VenuePlan = () => {
         onDeletePlan={onDeleteVenuePlan}
         onUpdatePLan={onUpdateVenuePlan}
       />
-      {/* <SeatToolkit
+      <SeatToolkit
         open={openBuild}
         mode="designer"
         events={{
           onExport: (data) => {
             console.log(data);
-          }
+          },
         }}
-      /> */}
-    
+      />
+
       <VenuePlanBuilder open={openBuild} onClose={() => setOpenBuild(false)} onSave={saveVenue} />
     </Box>
   );

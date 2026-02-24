@@ -41,13 +41,11 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
   const [isLoading, setIsLoading] = useState(false);
   const now = new Date();
 
-
   const getTwoDayB = (sessionStart) => {
-
-    const _2_days_b = new Date(new Date(sessionStart).getTime() - 2 * 24 * 60 * 1000)
+    const _2_days_b = new Date(new Date(sessionStart).getTime() - 2 * 24 * 60 * 1000);
 
     return _2_days_b;
-  }
+  };
   // Seat statistics
   const seatStats = {
     total: seats.length,
@@ -481,7 +479,7 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
                       value: seatStats.total,
                     },
                     {
-                      label: 'Taux d\'occupation:',
+                      label: "Taux d'occupation:",
                       value:
                         seatStats.total > 0
                           ? `${((seatStats.occupied / seatStats.total) * 100).toFixed(1)}%`

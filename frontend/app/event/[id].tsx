@@ -69,6 +69,7 @@ type SeatBillItem = {
   number?: string | number;
   price?: string | number;
   status?: string;
+  tier?: string;
 };
 
 // type Tier = { id: number; tier_type: string; price: number; available_quantity: number };
@@ -110,7 +111,8 @@ function toSeatBillItems(selectionIds: string[], tiers: PriceTier[], status?: st
       row,               // e.g., "A"
       number,            // e.g., "1"
       price,             // numeric price from tier
-      status,            // optional (e.g., "Selected")
+      status, 
+      tier: categoryName           // optional (e.g., "Selected")
     } as SeatBillItem;
   });
 }
@@ -246,36 +248,7 @@ export default function EventDetail() {
         },
         {} as Record<string, number>
       );
-
-      // Object.entries(counts).forEach(async ([categoryName, count]) => {
-      //   const tier = priceTiers.find((tier) => tier.tier_type === categoryName);
-      //   if (tier) {
-      //     const price = tier.price;
-      //     const totalPrice = price * count;
-      //     sum=sum+count;
-      //     if (count > tier.available_quantity) {
-      //       Alert.alert('Erreur', `Seulement ${tier.available_quantity} tickets disponibles`);
-      //       return;
-      //     }
-      //     // Convert the route param id (string | undefined) to a number and validate it
-      //     const eventIdNum = id ? Number(id) : undefined;
-      //     if (!eventIdNum || Number.isNaN(eventIdNum)) {
-            
-      //     }
-      //     else{
-
-      //       await buyTicket(eventIdNum, tier.id);
-      //       // await saveEvent(metadata);
-      //     }
-      //     console.log(
-      //       `tier_id ${tier.id} Catégorie: ${categoryName}, Prix unitaire: ${price}, Quantité: ${count} sur ${tier.available_quantity}, Prix total: ${totalPrice}`
-      //     );
-      //   } else {
-      //     console.log(`Catégorie: ${categoryName} (no tier), Quantité: ${count}`);
-      //   }
-      // });
       
-
  for (const [categoryName, count] of Object.entries(counts)) {
   const tier = priceTiers.find((t) => t.tier_type === categoryName);
   if (!tier) continue;
@@ -504,19 +477,6 @@ export default function EventDetail() {
 const time = formatTime(event.date);
 const dateLong = formatDateLong(event.date);
   const dateShort = formatDateShort(event.date);
-  // const days = daysRemaining(event.date);
-  // const daysLabel =
-  // days == null
-  //     ? null
-  //     : days > 1
-  //     ? `${days} jours`
-  //     : days === 1
-  //     ? `Demain`
-  //     : days === 0
-  //     ? "Aujourd'hui"
-
-  //     : 'Terminé';
-      // Calcul du label des jours restants
         const days = daysRemaining(event.date);
 
         let daysLabel: string | null = null;
@@ -587,17 +547,6 @@ const dateLong = formatDateLong(event.date);
                   />
                 <View style={styles.imageOverlay} />
                 
-                {/* Badge jours restants
-                {daysLabel && (
-                  <View style={[
-                    styles.daysBadge,
-                    days === 0 && styles.todayBadge,
-                    days < 0 && styles.expiredBadge
-                  ]}>
-                    <Text style={styles.daysBadgeText}>{daysLabel}</Text>
-                  </View>
-                )}
-              </View> */}
               {/* Badge jours restants */}
               {daysLabel && (
                 <View
@@ -619,17 +568,6 @@ const dateLong = formatDateLong(event.date);
                   <Text variant="titleLarge" style={styles.eventName}>
                     {event.name}
                   </Text>
-                  {/* <View style={styles.metaRow}>
-                    <MaterialCommunityIcons name="calendar-month" size={16} color="#666" />
-                    <Text style={styles.metaText}>{dateShort}</Text>
-                    <MaterialCommunityIcons
-                      name="map-marker"
-                      size={16}
-                      color="#666"
-                      style={{ marginLeft: 12 }}
-                    />
-                    
-                  </View> */}
                 </View>
                 <View style={styles.timePill}>
                   <MaterialCommunityIcons name="clock-time-four-outline" size={14} color="#fff" />
@@ -700,16 +638,6 @@ const dateLong = formatDateLong(event.date);
           // Adjust width to account for Card padding if necessary, or use full cardWidth
           const MAP_WIDTH = cardWidth; 
 
-//           const labelSections = useMemo(
-//           () => (Array.isArray(layout?.sections) ? layout.sections.filter(s => s.type === 'label') : []),
-//           [layout?.sections]
-//         );
-
-//           const categoriesMemo = useMemo(
-//   () => buildCategories(labelSections as LabelItem[], priceTiers),
-//   [labelSections, priceTiers]
-// );
-
           return (
             <View key={plan.id} style={{ width: '100%' }}>
               
@@ -753,35 +681,6 @@ const dateLong = formatDateLong(event.date);
     </Card>
   </Animatable.View>
 )}
-
-        {/* Section Réservation */}
-        {/* <Animatable.View 
-          animation="fadeInUp" 
-          duration={600} 
-          delay={300} 
-          style={{ width: cardWidth, marginBottom: 30 }}
-        >
-          <Card style={[styles.pricingCard, { width: cardWidth }]} elevation={3}>
-            <Card.Content>
-              <Text variant="titleMedium" style={styles.pricingTitle}>
-                Réserver des places
-              </Text>
-              <Paragraph style={styles.bookingDescription}>
-                Choisissez le type de ticket et la quantité lors de la réservation
-              </Paragraph>
-              
-              <Button
-                mode="contained"
-                onPress={handleSelectTicketType}
-                style={styles.bookButton}
-                icon="ticket-confirmation"
-                contentStyle={styles.bookButtonContent}
-              >
-                Choisir les tickets
-              </Button>
-            </Card.Content>
-          </Card>
-        </Animatable.View> */}
       </ScrollView>
     </SafeAreaView>
   );

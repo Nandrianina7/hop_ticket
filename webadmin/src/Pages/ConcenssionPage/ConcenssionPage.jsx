@@ -9,7 +9,7 @@ const ConcenssionPage = () => {
   const [count, setCount] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const fetchConcenssion = async (page = 1) => {
     try {
       const response = await api.get(`/cinema/organizer/get_concenssion/?page=${page}`, {

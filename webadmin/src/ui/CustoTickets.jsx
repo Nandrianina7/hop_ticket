@@ -143,7 +143,7 @@ const CustoTickets = ({ open, onClose, customer }) => {
                       },
                       {
                         icon: <Event color="primary" />,
-                        primary: 'date d\'achat ',
+                        primary: "date d'achat ",
                         second: ticket.purchase_date
                           ? new Date(ticket.purchase_date).toLocaleString()
                           : 'Unknown',

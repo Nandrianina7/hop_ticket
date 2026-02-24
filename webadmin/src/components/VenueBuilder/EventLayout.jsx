@@ -1,12 +1,19 @@
-import React ,{ useRef } from "react";
+import React, { useRef } from 'react';
 import {
-  Tabs, Tab, Box, Paper, Typography, Button, Snackbar, Alert // add Alert
-} from "@mui/material";
+  Tabs,
+  Tab,
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Snackbar,
+  Alert, // add Alert
+} from '@mui/material';
 import api from '../../api/api';
-import LocationInput from "../VenueBuilder/LocationInput.jsx";
-import { useNavigate } from "react-router-dom";
-import "leaflet/dist/leaflet.css";
-import SeatingEditor from "../SeatingEditor.jsx";
+import LocationInput from '../VenueBuilder/LocationInput.jsx';
+import { useNavigate } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css';
+import SeatingEditor from '../SeatingEditor.jsx';
 //  import { SeatingEditor } from "seatmap-creator";
 const EventLayoutComponent = () => {
   const editorRef = useRef(null);
@@ -32,8 +39,10 @@ const EventLayoutComponent = () => {
   }
   async function saveEventLocation(data) {
     try {
-      const response = await api.post('/api/event_site_locations/', data, { withCredentials: true });
-      
+      const response = await api.post('/api/event_site_locations/', data, {
+        withCredentials: true,
+      });
+
       if (!response.data) {
         console.log('No response founded');
         return;
@@ -65,25 +74,32 @@ const EventLayoutComponent = () => {
     } catch (error) {
       console.log('Error', Error(error).message);
     }
-
-  };
-    const handleLayoutChange = (layout) => {
+  }
+  const handleLayoutChange = (layout) => {
     console.log('Layout changed:', layout);
     setLayout(layout);
   };
-   const onSaveLayout = async () => {
+  const onSaveLayout = async () => {
     const layoutData = { name: siteName, metaData: Layout };
     try {
       const savedLayout = await saveEvent(layoutData);
       if (savedLayout) {
-        setSnack({ open: true, message: 'Le plan de salle a été enregistré avec succès!', severity: 'success' });
+        setSnack({
+          open: true,
+          message: 'Le plan de salle a été enregistré avec succès!',
+          severity: 'success',
+        });
         // navigate after showing feedback
         setTimeout(() => navigate('/event-listing'), 800);
       } else {
         setSnack({ open: true, message: 'Échec: de l’enregistrement.', severity: 'error' });
       }
     } catch (err) {
-      setSnack({ open: true, message: 'Échec de l’enregistrement. Veuillez réessayer.', severity: 'error' });
+      setSnack({
+        open: true,
+        message: 'Échec de l’enregistrement. Veuillez réessayer.',
+        severity: 'error',
+      });
     }
   };
 

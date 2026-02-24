@@ -703,7 +703,7 @@ class VenuePlanDeleteView(APIView):
          print('No selected id')
          return Response({'error': 'No venue plan was selected'}, status=status.HTTP_406_NOT_ACCEPTABLE)
       try:
-        venue_Plan = VenuePlan.objects.get(id=pk)
+        venue_Plan = EventPlan.objects.get(id=pk)
         if not venue_Plan:
            return Response({'message': 'venue plan not found'}, status=status.HTTP_404_NOT_FOUND)
         venue_Plan.delete()

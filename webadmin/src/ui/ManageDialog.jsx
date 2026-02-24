@@ -25,11 +25,11 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
     description: '',
     venue: '',
     file: null,
-    location:{
+    location: {
       name: '',
-      lon:'',
-      lat:''
-    }
+      lon: '',
+      lat: '',
+    },
   });
 
   const handleInput = (e) => {
@@ -101,7 +101,7 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
           fontSize: '1.25rem',
         }}
       >
-        {type === 'create' ? 'Créer un événement' : 'Mettre à jour l\'événement'}
+        {type === 'create' ? 'Créer un événement' : "Mettre à jour l'événement"}
       </DialogTitle>
 
       <DialogContent dividers sx={{ py: 3 }}>
@@ -156,8 +156,7 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
                 />
               )}
             />
-              <LocationInput onSelectLocation={(location) => handleLocationChange(location)} />
-
+            <LocationInput onSelectLocation={(location) => handleLocationChange(location)} />
           </Grid>
 
           {/* File Upload Section */}
@@ -238,7 +237,6 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
                 }}
               />
             </Stack>
-
           </Grid>
         </Grid>
       </DialogContent>

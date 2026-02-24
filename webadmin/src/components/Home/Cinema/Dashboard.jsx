@@ -295,7 +295,7 @@ const DashboardCinema = ({
           sx={{ display: 'flex', alignItems: 'center' }}
         >
           <TrendingUp sx={{ fontSize: 16, mr: 0.5, color: 'success.main' }} />
-          Total revenue: 
+          Total revenue:
           {revenueStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })} MGA
         </Typography>
         <Typography variant="body2" color="text.secondary">

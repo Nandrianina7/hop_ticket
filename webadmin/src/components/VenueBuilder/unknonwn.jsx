@@ -1,32 +1,299 @@
-import { Button } from '@mui/material';
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import {
-  Stage,
-  Layer,
-  Group,
-  Rect,
-  Text,
-  Circle,
-  Transformer,
-  RegularPolygon,
-  Shape,
-} from 'react-konva';
-import { renderShape } from './renderShape';
-import { SHAPE_TYPES } from './shapeType';
-import ShapePickerDialog from './ShapPicker';
-import ColorPickerDialog from './ColorPickerDialog';
-import SeatEditDialog from './SeatEditDialog';
-import SeatGridDialog from './SeatGridDialog';
-import SeatContextMenu from './SeatContextMenu';
-import ContextMenu from './ContextMenu';
-import { btnPrimaryStyle, btnSecondaryStyle, dialogStyle } from './style';
+import { Stage, Layer, Group, Rect, Text, Circle, Transformer } from 'react-konva';
 
-// Mapping pour les types de ticket et leur couleur
-export const TICKET_TIERS = {
-  VIP: '#ff6b6b',
-  Argent: '#45b7d1',
-  Bronze: '#feca57',
-  Public: '#96ceb4',
+/**
+ * SeatingEditor - Final Fixed Version
+ * Fixes: Zoom State, Spacebar Scoping, Input Typing, and Dialog Visibility
+ */
+
+// --- Internal Helper Components ---
+
+// 1. Updated Dialog Style to 'fixed' so it never disappears off-screen
+const dialogStyle = {
+  position: 'fixed', // Changed from absolute to fixed
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  background: 'white',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+  zIndex: 10000, // High z-index to ensure it's on top
+  minWidth: '300px',
+};
+
+const menuItemStyle = {
+  padding: '8px 12px',
+  cursor: 'pointer',
+  borderBottom: '1px solid #eee',
+  fontSize: '14px',
+};
+
+const ContextMenu = ({
+  x,
+  y,
+  sectionType,
+  onDuplicate,
+  onEdit,
+  onFillWithSeats,
+  onDelete,
+  onChangeColor,
+  onClose,
+}) => {
+  return (
+    <div
+      style={{
+        position: 'fixed', // Fixed ensures it stays under mouse even if scrolled
+        left: x,
+        top: y,
+        background: 'white',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+        zIndex: 10002,
+        minWidth: '160px',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div onClick={onDuplicate} style={menuItemStyle}>
+        📋 Dupliquer
+      </div>
+      <div onClick={onEdit} style={menuItemStyle}>
+        ✏️ modifier {sectionType === 'label' ? 'Label' : 'Name'}
+      </div>
+      {sectionType === 'section' && (
+        <div onClick={onFillWithSeats} style={menuItemStyle}>
+          🪑 remplir de place
+        </div>
+      )}
+      <div onClick={onChangeColor} style={menuItemStyle}>
+        🎨 Changer de couleur
+      </div>
+      <div onClick={onDelete} style={{ ...menuItemStyle, color: '#dc3545' }}>
+        🗑️ supprimer {sectionType === 'label' ? 'Label' : 'Section'}
+      </div>
+    </div>
+  );
+};
+
+const SeatContextMenu = ({ x, y, seatId, onEdit, onDelete, onClose }) => {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        left: x,
+        top: y,
+        background: 'white',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+        zIndex: 10002,
+        minWidth: '160px',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        style={{
+          padding: '8px 12px',
+          borderBottom: '1px solid #eee',
+          fontSize: '12px',
+          color: '#333',
+          backgroundColor: '#f8f9fa',
+          fontWeight: 'bold',
+        }}
+      >
+        ID: {seatId}
+      </div>
+      <div onClick={onEdit} style={menuItemStyle}>
+        ✏️ changer ID
+      </div>
+      <div onClick={onDelete} style={{ ...menuItemStyle, color: '#dc3545' }}>
+        🗑️ supprimer la place
+      </div>
+    </div>
+  );
+};
+
+const ColorPickerDialog = ({ currentColor, onConfirm, onCancel }) => {
+  const [selectedColor, setSelectedColor] = useState(currentColor);
+  const predefinedColors = [
+    '#ff6b6b',
+    '#4ecdc4',
+    '#45b7d1',
+    '#96ceb4',
+    '#feca57',
+    '#ff9ff3',
+    '#54a0ff',
+    '#5f27cd',
+    '#00d2d3',
+    '#ff9f43',
+    '#10ac84',
+    '#ee5253',
+    '#0abde3',
+    '#ff6b6b',
+    '#48dbfb',
+  ];
+
+  return (
+    <div style={dialogStyle} onClick={(e) => e.stopPropagation()}>
+      <h3>Changer la couleur de la section</h3>
+      <div style={{ marginBottom: '20px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '8px',
+            marginBottom: '15px',
+          }}
+        >
+          {predefinedColors.map((color) => (
+            <div
+              key={color}
+              onClick={() => setSelectedColor(color)}
+              style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: color,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                border: selectedColor === color ? '3px solid #333' : '2px solid #ddd',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {selectedColor === color && (
+                <span style={{ color: 'white', fontSize: '16px' }}>✓</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label style={{ fontWeight: 'bold' }}>Custom:</label>
+          <input
+            type="color"
+            value={selectedColor}
+            onChange={(e) => setSelectedColor(e.target.value)}
+            style={{
+              width: '50px',
+              height: '40px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          />
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={btnSecondaryStyle}>
+          annuler
+        </button>
+        <button onClick={() => onConfirm(selectedColor)} style={btnPrimaryStyle}>
+          Appliquer la couleur
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SeatGridDialog = ({ onConfirm, onCancel }) => {
+  const [rows, setRows] = useState(5);
+  const [cols, setCols] = useState(8);
+  const [seatSize, setSeatSize] = useState(8);
+
+  return (
+    <div style={dialogStyle} onClick={(e) => e.stopPropagation()}>
+      <h3>remplir la section avec des places</h3>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={labelStyle}>Nombre de lignes:</label>
+        <input
+          type="number"
+          min="1"
+          max="50"
+          value={rows}
+          onChange={(e) => setRows(parseInt(e.target.value) || 1)}
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ marginBottom: '15px' }}>
+        <label style={labelStyle}>nombre de colonnes:</label>
+        <input
+          type="number"
+          min="1"
+          max="50"
+          value={cols}
+          onChange={(e) => setCols(parseInt(e.target.value) || 1)}
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={labelStyle}>dimension de place:</label>
+        <input
+          type="number"
+          min="3"
+          max="20"
+          value={seatSize}
+          onChange={(e) => setSeatSize(parseInt(e.target.value) || 3)}
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={btnSecondaryStyle}>
+          annuler
+        </button>
+        <button onClick={() => onConfirm(rows, cols, seatSize)} style={btnPrimaryStyle}>
+          remplir
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const SeatEditDialog = ({ seat, onConfirm, onCancel }) => {
+  const [newId, setNewId] = useState(seat.id);
+
+  return (
+    <div style={dialogStyle} onClick={(e) => e.stopPropagation()}>
+      <h3>changer la place ID</h3>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={labelStyle}>place ID:</label>
+        <input
+          type="text"
+          value={newId}
+          onChange={(e) => setNewId(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={btnSecondaryStyle}>
+          Annuler
+        </button>
+        <button onClick={() => onConfirm(newId)} style={btnPrimaryStyle}>
+          Sauvgarder
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Styles
+const labelStyle = { display: 'block', marginBottom: '5px', fontWeight: 'bold' };
+const inputStyle = { width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' };
+const btnPrimaryStyle = {
+  background: '#28a745',
+  color: 'white',
+  border: 'none',
+  padding: '8px 16px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+const btnSecondaryStyle = {
+  background: '#6c757d',
+  color: 'white',
+  border: 'none',
+  padding: '8px 16px',
+  borderRadius: '4px',
+  cursor: 'pointer',
 };
 
 // --- Main Component ---
@@ -37,7 +304,7 @@ const SeatingEditor = React.forwardRef(
       onLayoutChange,
       initialLayout,
       height = '100vh',
-      width = '80%',
+      width = '100%',
       backgroundColor = 'transparent',
       hideToolbar = false,
       onSave,
@@ -52,9 +319,7 @@ const SeatingEditor = React.forwardRef(
           {
             id: 'section-1',
             name: 'Section A',
-            color: TICKET_TIERS['VIP'],
-            tier: 'VIP',
-            shapeType: SHAPE_TYPES.RECTANGLE,
+            color: '#ff6b6b',
             x: 50,
             y: 200,
             width: 150,
@@ -66,9 +331,7 @@ const SeatingEditor = React.forwardRef(
           {
             id: 'section-2',
             name: 'Section B',
-            color: TICKET_TIERS['Public'],
-            tier: 'Public',
-            shapeType: SHAPE_TYPES.CIRCLE,
+            color: '#4ecdc4',
             x: 250,
             y: 200,
             width: 150,
@@ -81,47 +344,11 @@ const SeatingEditor = React.forwardRef(
         scale: 1,
       }
     );
-
     useEffect(() => {
       if (initialLayout) {
         setLayout(initialLayout);
       }
     }, [initialLayout]);
-
-    const handleChangeTier = useCallback(
-      (sectionId, tier) => {
-        const newLayout = { ...layout };
-        const sectionIndex = newLayout.sections.findIndex((s) => s.id === sectionId);
-        if (sectionIndex !== -1) {
-          newLayout.sections[sectionIndex].tier = tier;
-          newLayout.sections[sectionIndex].color = TICKET_TIERS[tier];
-          newLayout.sections[sectionIndex].seats = newLayout.sections[sectionIndex].seats.map(
-            (seat) => ({
-              ...seat,
-              color: TICKET_TIERS[tier],
-            })
-          );
-          setLayout(newLayout);
-          if (onLayoutChange) onLayoutChange(newLayout);
-        }
-        setContextMenu(null);
-      },
-      [layout, onLayoutChange]
-    );
-
-    const handleChangeShape = useCallback(
-      (sectionId, shapeType) => {
-        const newLayout = { ...layout };
-        const sectionIndex = newLayout.sections.findIndex((s) => s.id === sectionId);
-        if (sectionIndex !== -1) {
-          newLayout.sections[sectionIndex].shapeType = shapeType;
-          setLayout(newLayout);
-          if (onLayoutChange) onLayoutChange(newLayout);
-        }
-        setShapePickerDialog(null);
-      },
-      [layout, onLayoutChange]
-    );
 
     const [selectedId, setSelectedId] = useState(null);
     const [scale, setScale] = useState(initialLayout?.scale || 1);
@@ -136,7 +363,6 @@ const SeatingEditor = React.forwardRef(
     const [seatGridDialog, setSeatGridDialog] = useState(null);
     const [seatEditDialog, setSeatEditDialog] = useState(null);
     const [colorPickerDialog, setColorPickerDialog] = useState(null);
-    const [shapePickerDialog, setShapePickerDialog] = useState(null);
 
     const transformerRef = useRef(null);
     const stageRef = useRef(null);
@@ -145,11 +371,14 @@ const SeatingEditor = React.forwardRef(
     const [labelDims, setLabelDims] = useState({ width: 0, height: 0 });
     const [sectionTextDims, setSectionTextDims] = useState({});
 
+    // 2. Updated Keyboard Handler to allow spaces in inputs
     useEffect(() => {
       const handleKeyDown = (e) => {
+        // CRITICAL FIX: If user is typing in an input, do NOT trigger Pan Mode
         if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
           return;
         }
+
         if (e.code === 'Space' && isHoveredRef.current) {
           e.preventDefault();
           setIsSpacePressed(true);
@@ -174,6 +403,7 @@ const SeatingEditor = React.forwardRef(
       };
     }, []);
 
+    // Handle Ctrl + scroll wheel zoom
     useEffect(() => {
       const handleWheel = (e) => {
         if (e.ctrlKey && isHoveredRef.current) {
@@ -188,6 +418,7 @@ const SeatingEditor = React.forwardRef(
       return () => window.removeEventListener('wheel', handleWheel);
     }, [scale]);
 
+    // Handle mouse events for pan mode cursor
     useEffect(() => {
       const handleMouseDown = () => {
         if (isSpacePressed) document.body.style.cursor = 'grabbing';
@@ -336,6 +567,10 @@ const SeatingEditor = React.forwardRef(
 
     const handleSectionRightClick = useCallback((e, sectionId) => {
       e.evt.preventDefault();
+      const stage = stageRef.current;
+
+      // Get mouse position relative to browser viewport, not canvas
+      // This ensures context menu opens exactly where you click
       setContextMenu({
         x: e.evt.clientX,
         y: e.evt.clientY,
@@ -481,9 +716,7 @@ const SeatingEditor = React.forwardRef(
       const newSection = {
         id: `section-${Date.now()}`,
         name: `Section ${layout.sections.length + 1}`,
-        tier: 'Public', // default tier
-        color: TICKET_TIERS['Public'],
-        shapeType: SHAPE_TYPES.RECTANGLE,
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
         x: 100 + layout.sections.length * 200,
         y: 300,
         width: 150,
@@ -502,7 +735,6 @@ const SeatingEditor = React.forwardRef(
         id: `label-${Date.now()}`,
         name: 'Stage',
         color: '#2c3e50',
-        shapeType: SHAPE_TYPES.RECTANGLE,
         x: 100,
         y: 50,
         width: 200,
@@ -644,7 +876,7 @@ const SeatingEditor = React.forwardRef(
               type="text"
               placeholder="nom de Salle"
               onChange={(e) => {
-                if (getSiteName) getSiteName(e.target.value);
+                getSiteName(e.target.value);
               }}
             />
             <Button
@@ -665,29 +897,6 @@ const SeatingEditor = React.forwardRef(
             <Button onClick={addLabelSection} style={btnAction}>
               Ajouter Label
             </Button>
-            <select
-              onChange={(e) => {
-                if (selectedId) {
-                  handleChangeShape(selectedId, e.target.value);
-                }
-              }}
-              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-              value={
-                layout.sections.find((s) => s.id === selectedId)?.shapeType || SHAPE_TYPES.RECTANGLE
-              }
-            >
-              <option value={SHAPE_TYPES.RECTANGLE}>Rectangle</option>
-              <option value={SHAPE_TYPES.TRAPEZOID}>Trapèze</option>
-              <option value={SHAPE_TYPES.PARALLELOGRAM}>Parallélogramme</option>
-              <option value={SHAPE_TYPES.CIRCLE}>Cercle</option>
-              <option value={SHAPE_TYPES.TRIANGLE}>Triangle</option>
-              <option value={SHAPE_TYPES.PENTAGON}>Pentagone</option>
-              <option value={SHAPE_TYPES.HEXAGON}>Hexagone</option>
-              <option value={SHAPE_TYPES.OCTAGON}>Octogone</option>
-              <option value={SHAPE_TYPES.STAR}>Étoile</option>
-              <option value={SHAPE_TYPES.CROSS}>Croix</option>
-              <option value={SHAPE_TYPES.DEFORMABLE_QUAD}>Deformable</option>
-            </select>
             <Button onClick={() => handleZoom('in')} style={btnZoom}>
               +
             </Button>
@@ -737,28 +946,27 @@ const SeatingEditor = React.forwardRef(
           <Layer>
             {layout.sections.map((section) => (
               <Group key={section.id}>
-                {/* Render shape based on shapeType */}
-                {renderShape(section.shapeType || SHAPE_TYPES.RECTANGLE, {
-                  id: section.id,
-                  x: section.x,
-                  y: section.y,
-                  width: section.width,
-                  height: section.height,
-                  fill: section.color,
-                  stroke: '#333',
-                  strokeWidth: 2,
-                  cornerRadius: 6,
-                  opacity: 0.8,
-                  rotation: section.rotation,
-                  onClick: () => handleSectionClick(section.id),
-                  onTap: () => handleSectionClick(section.id),
-                  onContextMenu: (e) => handleSectionRightClick(e, section.id),
-                  draggable: tool === 'select' && !isSpacePressed,
-                  onDragEnd: (e) => handleDragEnd(e, 'section', section.id),
-                  onTransformEnd: handleTransformEnd,
-                })}
-
-                {/* Section name text */}
+                <Rect
+                  id={section.id}
+                  x={section.x + section.width / 2}
+                  y={section.y + section.height / 2}
+                  width={section.width}
+                  height={section.height}
+                  fill={section.color}
+                  stroke="#333"
+                  strokeWidth={2}
+                  cornerRadius={6}
+                  opacity={0.8}
+                  rotation={section.rotation}
+                  offsetX={section.width / 2}
+                  offsetY={section.height / 2}
+                  onClick={() => handleSectionClick(section.id)}
+                  onTap={() => handleSectionClick(section.id)}
+                  onContextMenu={(e) => handleSectionRightClick(e, section.id)}
+                  draggable={tool === 'select' && !isSpacePressed}
+                  onDragEnd={(e) => handleDragEnd(e, 'section', section.id)}
+                  onTransformEnd={handleTransformEnd}
+                />
                 {section.type === 'label' ? (
                   <Text
                     ref={labelTextRef}
@@ -794,7 +1002,6 @@ const SeatingEditor = React.forwardRef(
                   />
                 )}
 
-                {/* Seats */}
                 {section.seats.map((seat) => {
                   const centerX = section.x + section.width / 2;
                   const centerY = section.y + section.height / 2;
@@ -814,10 +1021,10 @@ const SeatingEditor = React.forwardRef(
                       x={finalX}
                       y={finalY}
                       radius={seat.seatSize}
-                      fill={seat.disabled ? '#ccc' : seat.color || '#fff'}
+                      fill="#fff"
                       stroke="#333"
                       strokeWidth={1}
-                      draggable={tool === 'select' && !isSpacePressed && !seat.disabled}
+                      draggable={tool === 'select' && !isSpacePressed}
                       onDragEnd={(e) => handleSeatDragEnd(e, seat, section)}
                       onContextMenu={(e) => handleSeatContextMenu(e, seat)}
                     />
@@ -881,15 +1088,6 @@ const SeatingEditor = React.forwardRef(
                 onCancel: () => setColorPickerDialog(null),
               });
             }}
-            onChangeShape={() => {
-              const section = layout.sections.find((s) => s.id === contextMenu.sectionId);
-              setShapePickerDialog({
-                currentShape: section?.shapeType || SHAPE_TYPES.RECTANGLE,
-                sectionId: contextMenu.sectionId,
-              });
-              setContextMenu(null);
-            }}
-            onChangeTier={(tier) => handleChangeTier(contextMenu.sectionId, tier)}
             onClose={() => setContextMenu(null)}
           />
         )}
@@ -897,11 +1095,6 @@ const SeatingEditor = React.forwardRef(
         {seatContextMenu && (
           <SeatContextMenu
             {...seatContextMenu}
-            isDisabled={
-              layout.sections
-                .find((s) => s.id === seatContextMenu.sectionId)
-                ?.seats.find((s) => s.id === seatContextMenu.seatId)?.disabled
-            }
             onEdit={() => {
               const seat = layout.sections
                 .find((s) => s.id === seatContextMenu.sectionId)
@@ -920,29 +1113,6 @@ const SeatingEditor = React.forwardRef(
                 ].seats.filter((s) => s.id !== seatContextMenu.seatId);
                 setLayout(newLayout);
                 if (onLayoutChange) onLayoutChange(newLayout);
-              }
-              setSeatContextMenu(null);
-            }}
-            onToggleDisabled={() => {
-              const newLayout = { ...layout };
-              const sectionIndex = newLayout.sections.findIndex(
-                (s) => s.id === seatContextMenu.sectionId
-              );
-
-              if (sectionIndex !== -1) {
-                const seatIndex = newLayout.sections[sectionIndex].seats.findIndex(
-                  (s) => s.id === seatContextMenu.seatId
-                );
-
-                if (seatIndex !== -1) {
-                  const seat = newLayout.sections[sectionIndex].seats[seatIndex];
-                  newLayout.sections[sectionIndex].seats[seatIndex] = {
-                    ...seat,
-                    disabled: !seat.disabled,
-                  };
-                  setLayout(newLayout);
-                  if (onLayoutChange) onLayoutChange(newLayout);
-                }
               }
               setSeatContextMenu(null);
             }}
@@ -1003,14 +1173,6 @@ const SeatingEditor = React.forwardRef(
             onCancel={colorPickerDialog.onCancel}
           />
         )}
-
-        {shapePickerDialog && (
-          <ShapePickerDialog
-            currentShape={shapePickerDialog.currentShape}
-            onConfirm={(shapeType) => handleChangeShape(shapePickerDialog.sectionId, shapeType)}
-            onCancel={() => setShapePickerDialog(null)}
-          />
-        )}
       </div>
     );
   }
@@ -1030,6 +1192,7 @@ const btnAction = {
   background: '#17a2b8',
   color: 'white',
   borderColor: '#17a2b8',
+  '&:hover': { background: '#138496' },
 };
 const btnZoom = {
   ...btnBase,

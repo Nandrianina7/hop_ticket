@@ -24,8 +24,7 @@ export const filterMovieByDate = (movies, filterType) => {
       return movies.filter((movie) =>
         movie.sessions.some(
           (session) =>
-            new Date(session.start_time) >= startOfWeek &&
-            new Date(session.start_time) <= endOfWeek
+            new Date(session.start_time) >= startOfWeek && new Date(session.start_time) <= endOfWeek
         )
       );
 
@@ -56,10 +55,10 @@ export const hasUpcomingSession = (movie) => {
 
   const now = new Date();
   const minDate = new Date();
-  minDate.setDate(now.getDate() + 2); 
+  minDate.setDate(now.getDate() + 2);
 
   return movie.sessions.some((session) => {
     const sessionDate = new Date(session.start_time);
-    return sessionDate >= minDate; 
+    return sessionDate >= minDate;
   });
-}
+};

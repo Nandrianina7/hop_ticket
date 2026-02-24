@@ -39,7 +39,7 @@ const MoviesPage = () => {
         withCredentials: true,
       });
       if (!response.data) {
-        showSnackbar('Échec de l\'ajout du film', 'error');
+        showSnackbar("Échec de l'ajout du film", 'error');
         return;
       }
       setOpenSession(true);
@@ -47,7 +47,7 @@ const MoviesPage = () => {
       showSnackbar('Film ajouté avec succès');
       return response.data;
     } catch (error) {
-      showSnackbar('Erreur lors de l\'ajout du film', 'error');
+      showSnackbar("Erreur lors de l'ajout du film", 'error');
     }
   };
 
@@ -181,7 +181,7 @@ const MoviesPage = () => {
   };
   const add_promocode = async (formData) => {
     try {
-      const response = await api.post(`/cinema/promocodes/`, formData, {withCredentials: true});
+      const response = await api.post(`/cinema/promocodes/`, formData, { withCredentials: true });
 
       if (!response.data) {
         showSnackbar('Failed to add promocode', 'error');
@@ -195,7 +195,7 @@ const MoviesPage = () => {
     } catch (error) {
       showSnackbar(error.response.data.details.code, 'error');
     }
-  }
+  };
 
   const create_pcode_w_session = async (formData, id) => {
     if (!id) {
@@ -204,23 +204,23 @@ const MoviesPage = () => {
     }
 
     try {
-      const response = await api.post(`/cinema/promocodes/session/${id}/`, formData, 
-        { withCredentials: true }
-      );
+      const response = await api.post(`/cinema/promocodes/session/${id}/`, formData, {
+        withCredentials: true,
+      });
 
       if (!response.data) {
         showSnackbar('No response was found from server', 'error');
         return;
       }
       if (response.status !== 201) {
-        showSnackbar(response.data.error, 'error')
+        showSnackbar(response.data.error, 'error');
         return;
       }
       showSnackbar('Promotion code successfully added', 'success');
     } catch (error) {
       showSnackbar(error.response.data.details.code);
     }
-  }
+  };
 
   const create_pcode_w_movie = async (formData, id) => {
     if (!id) {
@@ -229,9 +229,9 @@ const MoviesPage = () => {
     }
 
     try {
-      const response = await api.post(`/cinema/promocodes/movie/${id}/`, formData, 
-        { withCredentials: true }
-      )
+      const response = await api.post(`/cinema/promocodes/movie/${id}/`, formData, {
+        withCredentials: true,
+      });
 
       if (!response.data) {
         showSnackbar(`Failed to create promocodes for ${id}`, 'error');
@@ -247,7 +247,7 @@ const MoviesPage = () => {
     } catch (error) {
       showSnackbar(error.response.data.error, 'error');
     }
-  }
+  };
   const toggleOpen = (newVal) => () => {
     setOpenForm(newVal);
   };
@@ -274,7 +274,7 @@ const MoviesPage = () => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 1 }}>
-          {['Cette semaine','À venir','Passé','Tous'].map((item, index) => (
+          {['Cette semaine', 'À venir', 'Passé', 'Tous'].map((item, index) => (
             <Chip
               key={index}
               label={item}
@@ -302,15 +302,15 @@ const MoviesPage = () => {
               },
             }}
           />
-            <Button
-              onClick={toggleOpen(true)}
-              color="primary"
-              variant="contained"
-              startIcon={<Add />}
-            >
-              Ajouter un film
-            </Button>
-            <PromocodeForm btnText={'Add new promo code'} type={'create'} onSave={add_promocode}/>
+          <Button
+            onClick={toggleOpen(true)}
+            color="primary"
+            variant="contained"
+            startIcon={<Add />}
+          >
+            Ajouter un film
+          </Button>
+          <PromocodeForm btnText={'Add new promo code'} type={'create'} onSave={add_promocode} />
           <MoviesForm
             onSave={add_movies}
             open={openForm}

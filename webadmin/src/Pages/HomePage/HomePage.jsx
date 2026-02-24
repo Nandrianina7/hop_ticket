@@ -40,27 +40,27 @@ const HomePage = () => {
   };
 
   const buildUploadFormData = (data) => {
-  const fd = new FormData();
-  const { date, time, file, image, ...rest } = data;
+    const fd = new FormData();
+    const { date, time, file, image, ...rest } = data;
 
-  // combine date + time like before
-  const combineDate =
-    date && time
-      ? dayjs(date).hour(time.hour()).minute(time.minute()).second(0).millisecond(0)
-      : null;
+    // combine date + time like before
+    const combineDate =
+      date && time
+        ? dayjs(date).hour(time.hour()).minute(time.minute()).second(0).millisecond(0)
+        : null;
 
-  // append simple fields
-  Object.entries(rest).forEach(([k, v]) => {
-    if (v !== undefined && v !== null) fd.append(k, String(v));
-  });
-  if (combineDate) fd.append('date', combineDate.toISOString());
+    // append simple fields
+    Object.entries(rest).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) fd.append(k, String(v));
+    });
+    if (combineDate) fd.append('date', combineDate.toISOString());
 
-  // append the File as 'file' (backend uses request.FILES.get("file"))
-  const f = file || image; // accept either property name from the form
-  if (f instanceof File) fd.append('file', f);
+    // append the File as 'file' (backend uses request.FILES.get("file"))
+    const f = file || image; // accept either property name from the form
+    if (f instanceof File) fd.append('file', f);
 
-  return fd;
-};
+    return fd;
+  };
 
   const buildUpload = (data) => {
     const { date, time, ...rest } = data;
@@ -94,29 +94,34 @@ const HomePage = () => {
   };
 
   const handleClick = async (formData) => {
-     const payload = buildUploadFormData(formData);
-     const eventLocation= formData.location;
+    const payload = buildUploadFormData(formData);
+    const eventLocation = formData.location;
 
-  // optional: debug what’s inside
-  console.log(
-    'FormData entries:',
-    Array.from(payload.entries()).map(([k, v]) => [k, v instanceof File ? `${v.name} (${v.size})` : v])
-  );
+    // optional: debug what’s inside
+    console.log(
+      'FormData entries:',
+      Array.from(payload.entries()).map(([k, v]) => [
+        k,
+        v instanceof File ? `${v.name} (${v.size})` : v,
+      ])
+    );
     try {
       const response = await api.post('/api/add_event/', payload, { withCredentials: true });
-    
+
       if (!response.data) {
         showSnackbar('Failed to create event', 'error');
         return;
       }
-        console.log('Event creation response:', response.data.event.id);
-      const payloadLocation={
-        event_id:response.data.event.id,
-        location:eventLocation
-      }
-      const respoonse = await api.post('/api/eventLocation/',payloadLocation,{withCredentials:true});
+      console.log('Event creation response:', response.data.event.id);
+      const payloadLocation = {
+        event_id: response.data.event.id,
+        location: eventLocation,
+      };
+      const respoonse = await api.post('/api/eventLocation/', payloadLocation, {
+        withCredentials: true,
+      });
       if (!respoonse.data) {
-        showSnackbar('Failed to set location for event','error')
+        showSnackbar('Failed to set location for event', 'error');
       }
       console.log('Event payload', payload);
 

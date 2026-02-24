@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Stack, Snackbar, Alert } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Stack,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 
 /**
  * Small form to add quantity to a concession item.

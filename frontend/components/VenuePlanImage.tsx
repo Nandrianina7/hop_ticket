@@ -26,7 +26,7 @@ const VenuePlanImage: React.FC<VenuePlanImageProps> = ({ plan, onPress }) => {
       ? prev.filter((id) => id !== seatId)
       : [...prev, seatId]
   );
-};
+  };
 
 
 

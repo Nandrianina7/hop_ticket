@@ -68,10 +68,10 @@ const CineOrgSignupForm = ({ onSave, name }) => {
     {
       name: 'full_name',
       value: formData.full_name,
-      label: 'Nom d\'utilisateur',
+      label: "Nom d'utilisateur",
       type: 'text',
       icon: <Person />,
-      placeholder: 'Nom D\'utilisateur',
+      placeholder: "Nom D'utilisateur",
     },
     {
       name: 'email',
@@ -132,9 +132,7 @@ const CineOrgSignupForm = ({ onSave, name }) => {
           Creation de compte
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ opacity: 0.8 }}>
-          {name === 'event'
-            ? 'Pour Organisateur'
-            : 'Pour les Cinema'}
+          {name === 'event' ? 'Pour Organisateur' : 'Pour les Cinema'}
         </Typography>
       </Box>
       <Divider sx={{ mb: 4 }} />

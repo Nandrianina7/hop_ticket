@@ -10,7 +10,7 @@ const ConcessionCard = ({ concessionList = [], onDelete, onUpdate }) => {
   const theme = useTheme();
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [quantity,setQty] = useState(0);
+  const [quantity, setQty] = useState(0);
   const [openDelete, setOpenDelete] = useState(false);
   const toggleDelete = (newVal) => {
     setOpenDelete(newVal);
@@ -79,14 +79,15 @@ const ConcessionCard = ({ concessionList = [], onDelete, onUpdate }) => {
                   <DeleteOutlineTwoTone />
                 </IconButton>
                 <ConcenssionForm onSave={onUpdate} initialData={item} />
-                <ConcessionAddQty item={item}
-                onSave={async ({ id, quantity }) => {
-                  // Call backend view, then update list
-                  await api.post(`/cinema/concessions/${id}/add-stock/`, { quantity });
-                  setQty(quantity);
-                  // onUpdate?.({ ...item, stock: (item.stock || 0) + quantity })
-                }}
-              />
+                <ConcessionAddQty
+                  item={item}
+                  onSave={async ({ id, quantity }) => {
+                    // Call backend view, then update list
+                    await api.post(`/cinema/concessions/${id}/add-stock/`, { quantity });
+                    setQty(quantity);
+                    // onUpdate?.({ ...item, stock: (item.stock || 0) + quantity })
+                  }}
+                />
               </Box>
             )}
 

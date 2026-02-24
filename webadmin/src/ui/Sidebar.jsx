@@ -14,22 +14,15 @@ import {
   ChevronLeft,
   LivingOutlined,
 } from '@mui/icons-material';
-import {
-  Avatar,
-  Box,
-  Divider,
-  IconButton,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { useLocation,NavLink as RouterNavLink } from 'react-router-dom';
+import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
+import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 import { Sidebar as ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import Signout from './Signout';
 // import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 
 const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
   const theme = useTheme();
-  const location = useLocation();          // <— track current route
+  const location = useLocation(); // <— track current route
   const currentPath = location.pathname;
   const [navigation, setNavigation] = useState([]);
   const [openLogout, setOpenLogout] = useState(false);
@@ -72,8 +65,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
   }, [role]);
 
   const isActive = (path) => currentPath === path;
-  const hasActiveChild = (item) =>
-  item.children?.some(c => currentPath.startsWith(c.path));
+  const hasActiveChild = (item) => item.children?.some((c) => currentPath.startsWith(c.path));
 
   const sidebarWidth = 240;
 
@@ -111,7 +103,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
           }}
         >
           {/* <Box display="flex" alignItems="center" gap={1.5}> </Box> */}
-          
+
           {!collapsed && (
             <Box display="flex" alignItems="center" gap={1.5}>
               <Avatar sx={{ width: 40, height: 40, bgcolor: 'text.primary' }}>HT</Avatar>
@@ -126,13 +118,10 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
         </Box>
 
         <Divider />
-        
-
-        
 
         {/* --- Menu --- */}
         <Menu
-         rootStyles={{
+          rootStyles={{
             ['& .ps-menu-button']: {
               borderRadius: 8,
               margin: '4px 8px',
@@ -145,18 +134,16 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
             ['& .active-link']: {
               backgroundColor: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
-              fontWeight:1500,
+              fontWeight: 1500,
               boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
             },
-          
+
             ['& .active-link .ps-menu-icon']: {
               color: theme.palette.primary.contrastText,
             },
-          
-            
           }}
         >
-                    {navigation.map((item, index) =>
+          {navigation.map((item, index) =>
             item.children ? (
               <SubMenu
                 key={index}
@@ -170,27 +157,25 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
                   <MenuItem
                     key={childIndex}
                     icon={child.icon}
-                    component={ <RouterNavLink
+                    component={
+                      <RouterNavLink
                         to={child.path}
                         end
-                        className={({ isActive: navActive }) =>
-                          navActive ? 'active-link' : ''
-                        }
-                      />}
-                    // active={window.location.pathname === child.path}
+                        className={({ isActive: navActive }) => (navActive ? 'active-link' : '')}
+                      />
+                    }
+                    active={window.location.pathname === child.path}
                   >
-                     <Typography
-                        component="span"
-                        sx={{
-                          color:
-                            location.pathname === item.path
-                              ? '#fff'
-                              : theme.palette.text.primary,
-                        }}
-                      >
-                        {item.text}
-                      </Typography>
-                    </MenuItem>
+                    <Typography
+                      component="span"
+                      sx={{
+                        color:
+                          location.pathname === item.path ? '#fff' : theme.palette.text.primary,
+                      }}
+                    >
+                      {item.text}
+                    </Typography>
+                  </MenuItem>
                 ))}
               </SubMenu>
             ) : (
@@ -198,26 +183,23 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
                 key={index}
                 icon={item.icon}
                 className={isActive(item.path) ? 'active-link' : ''}
-                component={ <RouterNavLink
+                component={
+                  <RouterNavLink
                     to={item.path}
                     end
-                    className={({ isActive: navActive }) =>
-                      navActive ? 'active-link' : ''
-                    }
-                  />}
+                    className={({ isActive: navActive }) => (navActive ? 'active-link' : '')}
+                  />
+                }
                 active={window.location.pathname === item.path}
               >
-                 <Typography
-                        component="span"
-                        sx={{
-                          color:
-                            location.pathname === item.path
-                              ? '#fff'
-                              : theme.palette.text.primary,
-                        }}
-                      >
-                        {item.text}
-                      </Typography>
+                <Typography
+                  component="span"
+                  sx={{
+                    color: location.pathname === item.path ? '#fff' : theme.palette.text.primary,
+                  }}
+                >
+                  {item.text}
+                </Typography>
               </MenuItem>
             )
           )}

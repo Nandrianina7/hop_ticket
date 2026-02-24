@@ -4,10 +4,9 @@ import api from '../../api/api';
 import { useEffect, useState } from 'react';
 import VenuePlanView from '../../components/VenueBuilder/VenuePlanVIew';
 import VenuePlanBuilder from '../../components/VenueBuilder/VenueBuilder';
-import SeatToolkit from "@mezh-hq/react-seat-toolkit";
-import "@mezh-hq/react-seat-toolkit/styles";
+import SeatToolkit from '@mezh-hq/react-seat-toolkit';
+import '@mezh-hq/react-seat-toolkit/styles';
 import EventListingLayout from '../EventListingLayout/EventListingLayout';
-
 
 const VenuePlan = () => {
   const navigate = useNavigate();
@@ -91,9 +90,7 @@ const VenuePlan = () => {
     setSelectedIndex(newValue);
   };
 
-  return (
-    <EventListingLayout />
-  );
+  return <EventListingLayout />;
 };
 
 export default VenuePlan;

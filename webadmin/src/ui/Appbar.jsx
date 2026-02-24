@@ -33,8 +33,7 @@ const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
         backgroundColor: (theme) => theme.palette.background.paper,
         color: (theme) => theme.palette.text.primary,
         boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-        borderBottom: (theme) =>
-          `1px solid ${theme.palette.divider}`,
+        borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         height: '70px',
         justifyContent: 'center',
       }}
@@ -59,10 +58,7 @@ const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
               objectFit: 'cover',
             }}
           />
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 700, color: 'primary.main' }}
-          >
+          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
             Hop ! Ticket
           </Typography>
         </Box>
@@ -121,12 +117,7 @@ const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
       </Toolbar>
 
       {/* ---- USER MENU MODAL ---- */}
-      <UserProfile
-        open={open}
-        handleClose={handleClose}
-        anchorEl={anchorEl}
-        user={user}
-      />
+      <UserProfile open={open} handleClose={handleClose} anchorEl={anchorEl} user={user} />
     </AppBar>
   );
 };

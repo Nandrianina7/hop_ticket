@@ -28,7 +28,7 @@ const ConcenssionForm = ({ onSave, initialData }) => {
     imagePreview: '',
     quantity: '',
   });
-  
+
   const [concenssionCategories, setConcenssionCategories] = useState([]);
   const fetchConcenssionCategories = async () => {
     try {
@@ -50,8 +50,6 @@ const ConcenssionForm = ({ onSave, initialData }) => {
     // fetchConcenssion();
     fetchConcenssionCategories();
   }, []);
-
-
 
   useEffect(() => {
     if (open && initialData) {
@@ -133,7 +131,9 @@ const ConcenssionForm = ({ onSave, initialData }) => {
         </Button>
       )}
       <Dialog open={open} onClose={toggleOpen(false)} fullWidth maxWidth="sm" sx={{ p: 1 }}>
-        <DialogTitle>{initialData ? 'Modifier la concession' : 'Créer une nouvelle concession'}</DialogTitle>
+        <DialogTitle>
+          {initialData ? 'Modifier la concession' : 'Créer une nouvelle concession'}
+        </DialogTitle>
 
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
@@ -180,10 +180,10 @@ const ConcenssionForm = ({ onSave, initialData }) => {
               label="Categorie"
             >
               {concenssionCategories.map((item) => (
-      <MenuItem key={item.id} value={item.id}>
-        {item.category_name}
-      </MenuItem>
-    ))}
+                <MenuItem key={item.id} value={item.id}>
+                  {item.category_name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <Box>

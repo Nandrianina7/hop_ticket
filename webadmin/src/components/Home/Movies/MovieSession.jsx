@@ -22,9 +22,9 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import FullCalendar from "@fullcalendar/react";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction"; // needed for selectable
+import FullCalendar from '@fullcalendar/react';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction'; // needed for selectable
 // import moment from "moment";
 import MovieSessionSeat from './MovieSessionSeat';
 
@@ -48,10 +48,17 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '20px', textAlign: 'center', border: '1px solid #ccc', borderRadius: '4px' }}>
+        <div
+          style={{
+            padding: '20px',
+            textAlign: 'center',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        >
           <h3>Something went wrong with the calendar</h3>
           <p>Please try refreshing the page or contact support.</p>
-          <button 
+          <button
             onClick={() => this.setState({ hasError: false, error: null })}
             style={{ padding: '8px 16px', marginTop: '10px' }}
           >
@@ -69,22 +76,22 @@ class ErrorBoundary extends React.Component {
 const getValidTimeRange = (openingHours) => {
   try {
     const [openHour, closeHour] = openingHours.split('-').map((t) => t.trim());
-    
+
     if (!openHour || !closeHour) {
       throw new Error('Invalid opening hours format');
     }
-    
+
     const minTime = new Date();
     minTime.setHours(parseInt(openHour.split(':')[0]), parseInt(openHour.split(':')[1]), 0, 0);
-    
+
     const maxTime = new Date();
     maxTime.setHours(parseInt(closeHour.split(':')[0]), parseInt(closeHour.split(':')[1]), 0, 0);
-    
+
     // Valider que les heures sont des objets Date valides
     if (isNaN(minTime.getTime()) || isNaN(maxTime.getTime())) {
       throw new Error('Invalid time values');
     }
-    
+
     return { minTime, maxTime };
   } catch (error) {
     console.warn('Invalid opening hours format, using defaults', error);
@@ -106,10 +113,10 @@ const MovieSession = ({
   existingSessions = [],
   type,
   fetchSessionSeat,
-  onSavePCode
+  onSavePCode,
 }) => {
- const [sessions, setSessions] = React.useState([]);
-  
+  const [sessions, setSessions] = React.useState([]);
+
   // État pour le formulaire
   const [currentSession, setCurrentSession] = React.useState({
     hall: '',
@@ -122,7 +129,7 @@ const MovieSession = ({
   const [selectedEvent, setSelectedEvent] = useState();
   const [openSessionSeat, setOpenSessionSeat] = useState(false);
   const theme = useTheme();
-  
+
   const handleInputChange = (e) => {
     const { value, name } = e.target;
     setCurrentSession((prev) => ({
@@ -166,7 +173,7 @@ const MovieSession = ({
     onClose();
   };
 
- const handleClose = () => {
+  const handleClose = () => {
     setSessions([]);
 
     setCurrentSession({ hall: '', start_time: '', end_time: '', base_price: '', vip_price: '' });
@@ -181,8 +188,8 @@ const MovieSession = ({
   };
 
   const onCreatePCode = (formData) => {
-    onSavePCode(formData, selectedEvent?.id)
-  }
+    onSavePCode(formData, selectedEvent?.id);
+  };
 
   let initialDate;
 
@@ -198,25 +205,25 @@ const MovieSession = ({
 
   const [currentDate, setCurrentDate] = useState(initialDate);
   const openingHours = cinema[0]?.opening_hours || '08:00-23:00';
-  
+
   // Utiliser la fonction corrigée pour obtenir minTime et maxTime
   const { minTime, maxTime } = getValidTimeRange(openingHours);
 
   // Calcul automatique des événements.
   // Ne se recalcule que si existingSessions, sessions, movie ou cinema changent.
- const calendarEvents = useMemo(() => {
+  const calendarEvents = useMemo(() => {
     // Fonction helper pour forcer la date en local (tel qu'écrit dans le formulaire)
     const toLocalDate = (dateString) => {
       if (!dateString) return new Date();
       // On enlève le 'Z' final s'il existe pour empêcher l'interprétation UTC
       // On s'assure ainsi que "10:00" reste "10:00" quel que soit le fuseau horaire
-      const cleanDate = dateString.replace('Z', ''); 
+      const cleanDate = dateString.replace('Z', '');
       return new Date(cleanDate);
     };
 
     const mappedExisting = existingSessions.map((session) => {
       const hall = cinema.flatMap((c) => c.halls).find((h) => h.id === session.hall);
-      console.log("mapping existing session",session);
+      console.log('mapping existing session', session);
       return {
         id: session.id || `existing-${session.start_time}`,
         title: `${hall?.name || session.hall} - ${session.movie?.title || 'Movie'}`,
@@ -241,33 +248,45 @@ const MovieSession = ({
         borderColor: '#4caf50',
       };
     });
-    
+
     // ... logic for currentPending ...
-    const currentPending = (currentSession.start_time && currentSession.end_time) ? [{
-        id: 'temp-preview',
-        title: 'Selected',
-        start: toLocalDate(currentSession.start_time),
-        end: toLocalDate(currentSession.end_time),
-        backgroundColor: '#ff9800',
-        display: 'block'
-    }] : [];
+    const currentPending =
+      currentSession.start_time && currentSession.end_time
+        ? [
+            {
+              id: 'temp-preview',
+              title: 'Selected',
+              start: toLocalDate(currentSession.start_time),
+              end: toLocalDate(currentSession.end_time),
+              backgroundColor: '#ff9800',
+              display: 'block',
+            },
+          ]
+        : [];
 
     return [...mappedExisting, ...mappedNew, ...currentPending];
-  }, [existingSessions, sessions, cinema, movie, currentSession.start_time, currentSession.end_time]);
+  }, [
+    existingSessions,
+    sessions,
+    cinema,
+    movie,
+    currentSession.start_time,
+    currentSession.end_time,
+  ]);
 
   // --- CORRECTION DU HANDLE SELECT ---
   const handleSelect = (selectInfo) => {
     const start = moment(selectInfo.start);
     const end = movie?.duration
-      ? start.clone().add(movie.duration, "minutes")
+      ? start.clone().add(movie.duration, 'minutes')
       : moment(selectInfo.end);
 
-    // Mettre à jour uniquement le formulaire. 
+    // Mettre à jour uniquement le formulaire.
     // Le useMemo détectera le changement et mettra à jour le calendrier automatiquement.
     setCurrentSession((prev) => ({
       ...prev,
-      start_time: start.format("YYYY-MM-DDTHH:mm"),
-      end_time: end.format("YYYY-MM-DDTHH:mm"),
+      start_time: start.format('YYYY-MM-DDTHH:mm'),
+      end_time: end.format('YYYY-MM-DDTHH:mm'),
     }));
   };
 
@@ -280,42 +299,48 @@ const MovieSession = ({
         fullWidth
         sx={{ '& .MuiDialog-paper': { height: '80vh' } }}
       >
-        <DialogTitle>Calendrier des sceance - {movie?.title} {`(${movie?.duration} min)`}</DialogTitle>
+        <DialogTitle>
+          Calendrier des sceance - {movie?.title} {`(${movie?.duration} min)`}
+        </DialogTitle>
 
         <DialogContent sx={{ display: 'flex', gap: 2, height: '100%' }}>
           <Box sx={{ flex: 2 }}>
             <ErrorBoundary>
               <FullCalendar
-                    plugins={[timeGridPlugin, interactionPlugin]}
-                    initialView="timeGridWeek"
-                    headerToolbar={{
-                      left: "prev,next today",
-                      center: "title",
-                      right: "timeGridWeek,timeGridDay",
-                    }}
-                    timeZone='local'
-                    allDaySlot={false} // hide all-day row
-                    slotMinTime="09:00:00"
-                    slotMaxTime="23:00:00"
-                    slotDuration="00:30:00"
-                    selectable={true}
-                    selectMirror={true}
-                    select={handleSelect}
-                    events={calendarEvents}
-                    eventClick={(info) =>{console.log("here is the event",info.event.extendedProps.resource);onOpenSessionSeat(info.event.extendedProps.resource);}}
-                    eventColor={theme.palette.info.dark} // same color as your MUI theme
-                    height="100%"event
-                    // validRange={{
-                    //   start: moment(currentDate).startOf("day").toISOString(),
-                    // }}
-                    datesSet={(info) => {
-                      const newDate = moment(info.start).toDate();
-                      if (currentDate.getTime() !== newDate.getTime()) {
-                        setCurrentDate(newDate);
-                      }
-                    }}
- // update currentDate when navigating
-                  />
+                plugins={[timeGridPlugin, interactionPlugin]}
+                initialView="timeGridWeek"
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: 'timeGridWeek,timeGridDay',
+                }}
+                timeZone="local"
+                allDaySlot={false} // hide all-day row
+                slotMinTime="09:00:00"
+                slotMaxTime="23:00:00"
+                slotDuration="00:30:00"
+                selectable={true}
+                selectMirror={true}
+                select={handleSelect}
+                events={calendarEvents}
+                eventClick={(info) => {
+                  console.log('here is the event', info.event.extendedProps.resource);
+                  onOpenSessionSeat(info.event.extendedProps.resource);
+                }}
+                eventColor={theme.palette.info.dark} // same color as your MUI theme
+                height="100%"
+                event
+                // validRange={{
+                //   start: moment(currentDate).startOf("day").toISOString(),
+                // }}
+                datesSet={(info) => {
+                  const newDate = moment(info.start).toDate();
+                  if (currentDate.getTime() !== newDate.getTime()) {
+                    setCurrentDate(newDate);
+                  }
+                }}
+                // update currentDate when navigating
+              />
             </ErrorBoundary>
           </Box>
 
@@ -354,8 +379,8 @@ const MovieSession = ({
                 sx={{ mb: 2 }}
                 slotProps={{
                   input: {
-                    readOnly: true
-                  }
+                    readOnly: true,
+                  },
                 }}
               />
 
@@ -370,8 +395,8 @@ const MovieSession = ({
                 sx={{ mb: 2 }}
                 slotProps={{
                   input: {
-                    readOnly: true
-                  }
+                    readOnly: true,
+                  },
                 }}
               />
               <TextField

@@ -74,14 +74,11 @@ const DashboardPage = () => {
       console.log('Added successfully', response.data.message);
       setCreadetData(response.data.event);
       setOpen(true);
-      showSnackbar('succès de l\'ajout de l\'évenement', 'success');
+      showSnackbar("succès de l'ajout de l'évenement", 'success');
       await fetchAllCustomers();
       await fetchEventData();
     } catch (error) {
-      showSnackbar(
-        'une erreur est survenue',
-        'error'
-      );
+      showSnackbar('une erreur est survenue', 'error');
     }
   };
   const onSaveImagePrice = async (data) => {

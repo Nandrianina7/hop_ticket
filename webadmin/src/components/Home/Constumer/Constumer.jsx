@@ -341,7 +341,7 @@ const Constumer = ({ data, isLoading }) => {
           <Typography variant="body2" color="text.disabled">
             {searchTerm
               ? 'pas de client trouvé.'
-              : 'Il n\'y a pas de clients enregistrés pour le moment.'}
+              : "Il n'y a pas de clients enregistrés pour le moment."}
           </Typography>
         </Card>
       )}

@@ -148,7 +148,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
 
     console.log('Attempting token refresh with:', refreshToken);
     
-    const { data } = await axios.post('http://192.168.1.100:8000/accounts/mobile/token/refresh/', {
+    const { data } = await axios.post('http://192.168.1.149:8000/accounts/mobile/token/refresh/', {
       refresh_token: refreshToken,
     });
 

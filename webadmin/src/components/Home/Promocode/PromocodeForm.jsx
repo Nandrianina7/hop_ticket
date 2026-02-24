@@ -1,22 +1,22 @@
-import { 
-  Button, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
-  FormControlLabel, 
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
   Checkbox,
   Grid,
   Box,
   Typography,
   Divider,
   ListItemIcon,
-  ListItemText
+  ListItemText,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -76,10 +76,10 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
     }));
   };
 
-  const handleSave = async() => {
+  const handleSave = async () => {
     await onSave(formData);
     toggleOpen(false)();
-  }
+  };
   return (
     <>
       {isItem ? (
@@ -90,7 +90,9 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
           <ListItemText primary={btnText} />
         </MenuItem>
       ) : (
-        <Button variant='contained' onClick={toggleOpen(true)}>{btnText}</Button>
+        <Button variant="contained" onClick={toggleOpen(true)}>
+          {btnText}
+        </Button>
       )}
       <Dialog
         open={open}
@@ -99,10 +101,8 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
         aria-labelledby="promocode-creation"
         scroll="paper"
       >
-        <DialogTitle>
-          {type === "edit" ? "Edit Promocode" : "Create New Promocode"}
-        </DialogTitle>
-        
+        <DialogTitle>{type === 'edit' ? 'Edit Promocode' : 'Create New Promocode'}</DialogTitle>
+
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, py: 1 }}>
             <Box>
@@ -112,7 +112,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
               <Grid container spacing={2}>
                 <Grid>
                   <TextField
-                    size='small'
+                    size="small"
                     name="code"
                     label="Promotion Code"
                     value={formData.code}
@@ -122,9 +122,9 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                     placeholder="e.g., SUMMER25"
                   />
                 </Grid>
-                <Grid >
+                <Grid>
                   <TextField
-                  size='small'
+                    size="small"
                     name="description"
                     label="Description"
                     multiline
@@ -132,7 +132,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                     onChange={handleInput}
                     fullWidth
                     placeholder="Describe the purpose of this promocode"
-                    sx={{ width: 400}}
+                    sx={{ width: 400 }}
                   />
                 </Grid>
               </Grid>
@@ -148,7 +148,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                   <FormControl fullWidth>
                     <InputLabel>Discount Type</InputLabel>
                     <Select
-                      size='small'
+                      size="small"
                       name="discount_type"
                       value={formData.discount_type}
                       onChange={handleSelect}
@@ -161,19 +161,25 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                  size='small'
+                    size="small"
                     name="discount_value"
                     type="number"
-                    label={formData.discount_type === 'percent' ? 'Discount Percentage' : 'Discount Amount'}
+                    label={
+                      formData.discount_type === 'percent'
+                        ? 'Discount Percentage'
+                        : 'Discount Amount'
+                    }
                     value={formData.discount_value}
                     onChange={handleInput}
                     fullWidth
                     required
-                    inputProps={{ 
+                    inputProps={{
                       min: 0,
-                      max: formData.discount_type === 'percent' ? 100 : undefined 
+                      max: formData.discount_type === 'percent' ? 100 : undefined,
                     }}
-                    helperText={formData.discount_type === 'percent' ? 'Enter value between 0-100' : ''}
+                    helperText={
+                      formData.discount_type === 'percent' ? 'Enter value between 0-100' : ''
+                    }
                   />
                 </Grid>
               </Grid>
@@ -190,7 +196,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                     <DateTimePicker
                       label="Valid From"
                       value={formData.valid_from}
-                      onChange={(val) => handleDateChange("valid_from", val)}
+                      onChange={(val) => handleDateChange('valid_from', val)}
                       slotProps={{ textField: { fullWidth: true } }}
                     />
                   </Grid>
@@ -198,7 +204,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                     <DateTimePicker
                       label="Valid Until"
                       value={formData.valid_until}
-                      onChange={(val) => handleDateChange("valid_until", val)}
+                      onChange={(val) => handleDateChange('valid_until', val)}
                       slotProps={{ textField: { fullWidth: true } }}
                     />
                   </Grid>
@@ -214,7 +220,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    size='small'
+                    size="small"
                     name="usage_limit"
                     type="number"
                     label="Total Usage Limit"
@@ -228,7 +234,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    size='small'
+                    size="small"
                     name="per_user_limit"
                     type="number"
                     label="Per User Limit"
@@ -252,7 +258,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                   <FormControl fullWidth>
                     <InputLabel>Applicable Seat Types</InputLabel>
                     <Select
-                      size='small'
+                      size="small"
                       name="seat_type"
                       value={formData.seat_type}
                       onChange={handleSelect}
@@ -266,7 +272,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                 </Grid>
                 <Grid item xs={12} sm={3}>
                   <TextField
-                    size='small'
+                    size="small"
                     name="min_tickets"
                     type="number"
                     label="Minimum Tickets"
@@ -278,7 +284,7 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
                 </Grid>
                 <Grid item xs={12} sm={3}>
                   <TextField
-                    size='small'
+                    size="small"
                     name="min_total_spent"
                     type="number"
                     label="Minimum Spend"
@@ -308,17 +314,13 @@ const PromocodeForm = ({ type, btnText, onSave, isItem = false }) => {
             </Box>
           </Box>
         </DialogContent>
-        
+
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={toggleOpen(false)} color="inherit">
             Cancel
           </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSave}
-            size="large"
-          >
-            {type === "edit" ? "Update Promocode" : "Create Promocode"}
+          <Button variant="contained" onClick={handleSave} size="large">
+            {type === 'edit' ? 'Update Promocode' : 'Create Promocode'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -24,7 +24,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
-import { PlayArrow, Schedule, Theaters, MoreVert, Edit, Delete,Close} from '@mui/icons-material';
+import { PlayArrow, Schedule, Theaters, MoreVert, Edit, Delete, Close } from '@mui/icons-material';
 import { getImagePath } from '../../../utils/getImagePath';
 import { useState, useEffect } from 'react';
 import { stringToColor } from '../../../utils/stringToColor';
@@ -33,8 +33,8 @@ import DeleteDialog from '../../../ui/DeleteDialog';
 import MoviesForm from './MovieForm';
 import PromocodeForm from '../Promocode/PromocodeForm';
 import { hasUpcomingSession } from '../../../utils/movies';
-import YouTube from "react-youtube";  
-import ReactPlayer from "react-player";
+import YouTube from 'react-youtube';
+import ReactPlayer from 'react-player';
 import FastImage from './FastImage';
 const MovieCard = ({
   movieList = [],
@@ -44,7 +44,7 @@ const MovieCard = ({
   onUpdateMovie,
   fetchSessionSeat,
   onSavePCode,
-  onSavePCodeW_M
+  onSavePCodeW_M,
 }) => {
   const getYouTubeVideoId = (urlOrId) => {
     if (!urlOrId) return null;
@@ -86,29 +86,28 @@ const MovieCard = ({
   const paginatedMovies = movieList.slice(startIndex, startIndex + itemsPerPage);
   const [selected, setSelected] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
-   const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [play, setPlay] = useState(false);
   const [video, setVideo] = useState();
 
   // const videoId = "FBuQsHSgmi0";
-  
 
   const [playerLoaded, setPlayerLoaded] = useState(false);
 
-// useEffect(() => {
-//   if (!playerLoaded) {
-//     const tag = document.createElement("script");
-//     tag.src = "https://www.youtube.com/iframe_api";
-//     tag.async = true;
-//     document.body.appendChild(tag);
-//     setPlayerLoaded(true);
-//   }
-// }, []);
+  // useEffect(() => {
+  //   if (!playerLoaded) {
+  //     const tag = document.createElement("script");
+  //     tag.src = "https://www.youtube.com/iframe_api";
+  //     tag.async = true;
+  //     document.body.appendChild(tag);
+  //     setPlayerLoaded(true);
+  //   }
+  // }, []);
 
   // Player options (YouTube IFrame API)
   const opts = {
-    height: "480",
-    width: "853",
+    height: '480',
+    width: '853',
     playerVars: {
       autoplay: 1,
       controls: 1,
@@ -118,20 +117,18 @@ const MovieCard = ({
 
   const onReady = (event) => {
     // Access the player instance if you want
-    console.log("YouTube Player Ready ✅");
+    console.log('YouTube Player Ready ✅');
     // You can even control playback:
     // event.target.playVideo();
   };
 
   const onError = (error) => {
-    console.error("YouTube Player Error ❌", error);
+    console.error('YouTube Player Error ❌', error);
   };
 
-    const handleOpen = () => setOpen(true);
+  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-
- 
   const toggleOpenSession = (newValue) => () => {
     setOpenSession(newValue);
   };
@@ -142,7 +139,7 @@ const MovieCard = ({
       setAnchorEl(null);
     }
   };
-  const onViewSession = (data,items) => {
+  const onViewSession = (data, items) => {
     setOpenSession(true);
     setData({
       session: items.map((item) => item.sessions).flat(),
@@ -175,7 +172,7 @@ const MovieCard = ({
 
   const handleSavePCodeW_M = (formData) => {
     onSavePCodeW_M(formData, selected?.id);
-  }
+  };
   useEffect(() => {
     setCurrentPage(1);
   }, [movieList]);
@@ -184,7 +181,6 @@ const MovieCard = ({
     <Box sx={{ width: '100%', p: 3 }}>
       <Grid container spacing={4}>
         {paginatedMovies.map((item) => (
-          
           <Grid key={item.id}>
             <Card
               sx={{
@@ -357,13 +353,16 @@ const MovieCard = ({
                     Directeur: {item.director}
                   </Typography>
                 )}
-                <Button variant="outlined" fullWidth onClick={() => onViewSession(item,paginatedMovies)}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => onViewSession(item, paginatedMovies)}
+                >
                   Voir les sceances
                 </Button>
               </CardContent>
             </Card>
           </Grid>
-          
         ))}
       </Grid>
       {pageCount > 1 && (
@@ -441,8 +440,9 @@ const MovieCard = ({
         open={openForm}
         onClose={toggleOpenForm(false)}
         onSave={handleUpdateMovie}
-      />{/* 📺 Modal Popup */}
-       <Modal
+      />
+      {/* 📺 Modal Popup */}
+      <Modal
         open={open}
         onClose={handleClose}
         closeAfterTransition
@@ -451,30 +451,30 @@ const MovieCard = ({
       >
         <Box
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "black",
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'black',
             borderRadius: 2,
             boxShadow: 24,
             p: 1,
-            width: "80vw",
+            width: '80vw',
             maxWidth: 900,
-            aspectRatio: "16 / 9",
+            aspectRatio: '16 / 9',
           }}
         >
           {/* Close Button */}
           <IconButton
             onClick={handleClose}
             sx={{
-              position: "absolute",
+              position: 'absolute',
               top: 8,
               right: 8,
               zIndex: 2,
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.5)",
-              "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+              color: 'white',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              '&:hover': { backgroundColor: 'rgba(0,0,0,0.8)' },
             }}
           >
             <Close />
@@ -487,7 +487,7 @@ const MovieCard = ({
               opts={opts}
               onReady={onReady}
               onError={onError}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: '100%', height: '100%' }}
             />
             // <ReactPlayer
             //     url={`https://www.youtube.com/watch?v=${videoId}`}
@@ -500,9 +500,7 @@ const MovieCard = ({
           )}
         </Box>
       </Modal>
-      
     </Box>
-    
   );
 };
 

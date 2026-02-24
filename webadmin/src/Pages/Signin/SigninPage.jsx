@@ -93,21 +93,16 @@ const SigninPage = () => {
         gap: 6,
       }}
     >
-     <Snackbar
-  open={openAlert}
-  onClose={handleClose}
-  autoHideDuration={5000}
-  anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
->
-  <Alert
-    onClose={handleClose}
-    severity={typeMess}
-    variant="outlined"
-    sx={{ width: '100%' }}
-  >
-    {message}
-  </Alert>
-</Snackbar>
+      <Snackbar
+        open={openAlert}
+        onClose={handleClose}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleClose} severity={typeMess} variant="outlined" sx={{ width: '100%' }}>
+          {message}
+        </Alert>
+      </Snackbar>
       <Box sx={{ position: 'absolute', top: 20, right: 20, display: 'flex', gap: 3 }}>
         <Link to="/organizer/signup">
           <Button variant="contained" fullWidth>

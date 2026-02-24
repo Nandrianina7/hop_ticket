@@ -256,7 +256,11 @@ const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...p
               </SeatGridContainer>
               <Box sx={{ display: 'flex', gap: 2, mt: 3, flexWrap: 'wrap' }}>
                 {[
-                  { color: 'primary', text: totalSeats - disabledSeats.length, label: 'Place totale' },
+                  {
+                    color: 'primary',
+                    text: totalSeats - disabledSeats.length,
+                    label: 'Place totale',
+                  },
                   { color: 'success.main', text: availableSeats, label: 'Place disponible' },
                   { color: 'warning.main', text: vipSeatsCount, label: 'Place VIP' },
                   // { color: 'error.main', text: disabledSeats.length, label: 'Place désactivée' },
@@ -298,7 +302,7 @@ const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...p
                 name="screentype"
                 displayEmpty
                 sx={{ mb: 2 }}
-                renderValue={(selected) => selected || 'Sélectionner le type d\'écran'}
+                renderValue={(selected) => selected || "Sélectionner le type d'écran"}
               >
                 <MenuItem value="">type d'écran</MenuItem>
                 {['2D', '3D', 'IMAX', '4DX'].map((item) => (

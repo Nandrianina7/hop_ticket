@@ -10,6 +10,7 @@ type SeatBillItem = {
   number?: string | number;
   price?: string | number;
   status?: string;
+  tier?: string;
 };
 
 type Props = {
@@ -19,6 +20,7 @@ type Props = {
   taxRate?: number;
   onCheckout?: () => void;
   showSeatList?: boolean;
+  priceTiers?: [];
 };
 
 const toNumber = (v: unknown) => {
@@ -86,6 +88,7 @@ const SelectedSeatsBill: React.FC<Props> = ({
                       {(s.label ?? '')}
                       {s.row !== undefined ? `-${s.row}` : ''}
                       {s.number !== undefined ? `- ${s.number}` : ''}
+                      {s.tier ? ` ${s.tier}` : ''} - {nf.format(toNumber(s.price))}
                     </Text>
                     <Text style={styles.muted}>{nf.format(toNumber(s.price))}</Text>
                   </View>

@@ -28,7 +28,7 @@ const CinemaSignup = () => {
 
       if (response.status !== 200 && response.status !== 201) {
         console.log('Failed to register organizer account');
-        showSnackbar('Échec de l\'inscription du compte organisateur', 'error');
+        showSnackbar("Échec de l'inscription du compte organisateur", 'error');
         return;
       }
       if (response.status === 400) {
@@ -53,7 +53,7 @@ const CinemaSignup = () => {
       const response = await api.post('/cinema/add_halls/', data, { withCredentials: true });
       if (!response.data) {
         console.log('failed to save your cinema');
-        showSnackbar('Échec de l\'enregistrement de votre cinéma', 'error');
+        showSnackbar("Échec de l'enregistrement de votre cinéma", 'error');
         return;
       }
       if (response.status === 400) {
