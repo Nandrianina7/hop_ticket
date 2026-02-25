@@ -9,5 +9,5 @@ export const SHAPE_TYPES = {
   OCTAGON: 'octagon',
   STAR: 'star',
   CROSS: 'cross',
-  DEFORMABLE_QUAD: 'deformable'
+  DEFORMABLE_QUAD: 'deformable',
 };

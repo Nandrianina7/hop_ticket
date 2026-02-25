@@ -43,11 +43,20 @@ export const renderShape = (shapeType, props) => {
   };
 
   // --- Deformable Polygon Renderer ---
-  
+
   // --- Existing Shapes ---
   switch (shapeType) {
     case SHAPE_TYPES.RECTANGLE:
-      return <Rect x={x} y={y} width={width} height={height} cornerRadius={cornerRadius} {...commonProps} />;
+      return (
+        <Rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          cornerRadius={cornerRadius}
+          {...commonProps}
+        />
+      );
     case SHAPE_TYPES.DEFORMABLE_QUAD:
       return <DeformablePolygon {...props} />;
     case SHAPE_TYPES.TRAPEZOID:
@@ -87,19 +96,58 @@ export const renderShape = (shapeType, props) => {
       );
 
     case SHAPE_TYPES.CIRCLE:
-      return <Circle x={x + width / 2} y={y + height / 2} radius={Math.min(width, height) / 2} {...commonProps} />;
+      return (
+        <Circle
+          x={x + width / 2}
+          y={y + height / 2}
+          radius={Math.min(width, height) / 2}
+          {...commonProps}
+        />
+      );
 
     case SHAPE_TYPES.TRIANGLE:
-      return <RegularPolygon x={x + width / 2} y={y + height / 2} sides={3} radius={Math.min(width, height) / 2} {...commonProps} />;
+      return (
+        <RegularPolygon
+          x={x + width / 2}
+          y={y + height / 2}
+          sides={3}
+          radius={Math.min(width, height) / 2}
+          {...commonProps}
+        />
+      );
 
     case SHAPE_TYPES.PENTAGON:
-      return <RegularPolygon x={x + width / 2} y={y + height / 2} sides={5} radius={Math.min(width, height) / 2} {...commonProps} />;
+      return (
+        <RegularPolygon
+          x={x + width / 2}
+          y={y + height / 2}
+          sides={5}
+          radius={Math.min(width, height) / 2}
+          {...commonProps}
+        />
+      );
 
     case SHAPE_TYPES.HEXAGON:
-      return <RegularPolygon x={x + width / 2} y={y + height / 2} sides={6} radius={Math.min(width, height) / 2} {...commonProps} />;
+      return (
+        <RegularPolygon
+          x={x + width / 2}
+          y={y + height / 2}
+          sides={6}
+          radius={Math.min(width, height) / 2}
+          {...commonProps}
+        />
+      );
 
     case SHAPE_TYPES.OCTAGON:
-      return <RegularPolygon x={x + width / 2} y={y + height / 2} sides={8} radius={Math.min(width, height) / 2} {...commonProps} />;
+      return (
+        <RegularPolygon
+          x={x + width / 2}
+          y={y + height / 2}
+          sides={8}
+          radius={Math.min(width, height) / 2}
+          {...commonProps}
+        />
+      );
 
     case SHAPE_TYPES.STAR:
       return (
@@ -112,7 +160,7 @@ export const renderShape = (shapeType, props) => {
             const outerR = Math.min(width, height) / 2;
             const innerR = outerR * 0.4;
             const pointsNum = 5;
-            let rot = Math.PI / 2 * 3;
+            let rot = (Math.PI / 2) * 3;
             const step = Math.PI / pointsNum;
             ctx.beginPath();
             for (let i = 0; i < pointsNum; i++) {
@@ -145,6 +193,15 @@ export const renderShape = (shapeType, props) => {
       );
 
     default:
-      return <Rect x={x} y={y} width={width} height={height} cornerRadius={cornerRadius} {...commonProps} />;
+      return (
+        <Rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          cornerRadius={cornerRadius}
+          {...commonProps}
+        />
+      );
   }
 };

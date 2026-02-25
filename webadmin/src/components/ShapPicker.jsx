@@ -16,7 +16,7 @@ const ShapePickerDialog = ({ currentShape, onConfirm, onCancel }) => {
     { type: SHAPE_TYPES.OCTAGON, name: 'Octogone', icon: '🛑' },
     { type: SHAPE_TYPES.STAR, name: 'Étoile', icon: '⭐' },
     { type: SHAPE_TYPES.CROSS, name: 'Croix', icon: '✚' },
-    {type: SHAPE_TYPES.DEFORMABLE_QUAD, name: 'deformable'}
+    { type: SHAPE_TYPES.DEFORMABLE_QUAD, name: 'deformable' },
   ];
 
   return (

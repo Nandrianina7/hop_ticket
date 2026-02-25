@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from . import models
 from .models import Customer
-from api.models import Event
- 
+from api.models import Event, EventSite
+from cinema.models import Cinema, CinemaHall, Movie
 from rest_framework import serializers
 
 class EventSerializer(serializers.ModelSerializer):
@@ -18,12 +18,57 @@ class EventSerializer(serializers.ModelSerializer):
             "description",
         ]
 
+class EventSiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventSite
+        fields = ["id", "site_name"]
+
+class CinemaDashboardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cinema
+        fields = [
+            "id",
+            "name",
+            "city",
+            "phone",
+            "email",
+            "is_active",
+        ]
 class AdminSerialiser(serializers.ModelSerializer):
   event_count = serializers.IntegerField(read_only=True)
   event = EventSerializer(many=True, read_only=True)
+  eventSite = EventSiteSerializer(many=True, read_only=True)
+  cinemas = CinemaDashboardSerializer(many=True, read_only=True)
+  total_halls = serializers.SerializerMethodField()
+  total_movies_with_sessions = serializers.SerializerMethodField()
+
   class Meta:
     model = models.Admin
-    fields = ['id', 'email', 'full_name', 'phone', 'role', 'created_at', 'event_count', "event"]
+    fields = [
+        'id', 
+        'email', 
+        'full_name', 
+        'phone', 
+        'role', 
+        'created_at', 
+        'event_count', 
+        'event', 
+        'eventSite',
+        'cinemas',
+        "total_halls",
+        "total_movies_with_sessions",
+
+    ]
+
+  def get_total_halls(self, obj):
+        return CinemaHall.objects.filter(
+            cinema__organizer=obj
+        ).count()
+
+  def get_total_movies_with_sessions(self, obj):
+        return Movie.objects.filter(
+            sessions__hall__cinema__organizer=obj
+        ).distinct().count()
 
 
 class CustomerRegistrationSerializer(serializers.ModelSerializer):
