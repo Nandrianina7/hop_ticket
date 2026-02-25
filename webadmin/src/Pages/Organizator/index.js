@@ -1,3 +1,3 @@
-import Organizators from "./Organizators";
+import Organizators from './Organizators';
 
 export default Organizators;

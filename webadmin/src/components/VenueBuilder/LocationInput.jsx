@@ -7,7 +7,7 @@ export default function LocationInput({ onSelectLocation }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [markerInstance, setMarkerInstance] = useState(null);
   const [inputValue, setInputValue] = useState('');
-  const API_KEY = import.meta.env.GOOGLE_CLOUD_API_KEY
+  const API_KEY = import.meta.env.GOOGLE_CLOUD_API_KEY;
   useEffect(() => {
     const loadScript = () => {
       if (window.google && window.google.maps) {
@@ -17,8 +17,7 @@ export default function LocationInput({ onSelectLocation }) {
 
       // REPLACE WITH YOUR REAL API KEY
       const script = document.createElement('script');
-      script.src =
-        `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initMapAndAutocomplete;

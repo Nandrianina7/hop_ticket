@@ -178,13 +178,12 @@ const EventLayoutListingComponent = () => {
         return;
       }
       console.log('Venue deleted successfully');
-      
     } catch (error) {
       const errMessage = error instanceof Error ? error.message : 'unknown error';
       console.log(errMessage);
       console.log(error);
     }
-  }
+  };
   // ... (rest of the component JSX, which is correct)
   if (!loading && eventSite.length === 0) {
     return (
@@ -232,7 +231,6 @@ const EventLayoutListingComponent = () => {
         // position: "fixed",
       }}
     >
-
       <Box
         sx={{
           display: 'flex',

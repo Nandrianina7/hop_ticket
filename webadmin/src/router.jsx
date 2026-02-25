@@ -20,7 +20,6 @@ import EventListingLayout from './Pages/EventListingLayout/EventListingLayout';
 import TestPlayer from './components/Home/testPlayer/testPlayer';
 import Organizators from './Pages/Organizator';
 
-
 export const router = createHashRouter([
   {
     element: <ProtectedRoute />,

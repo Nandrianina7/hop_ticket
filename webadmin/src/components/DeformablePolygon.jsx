@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { Shape, Circle, Line, Group } from 'react-konva';
 
-export const DeformablePolygon = ({ x = 0, y = 0, width = 100, height = 100, points: initialPoints, isEditing = false, onUpdate, fill = '#ccc', stroke = '#000', strokeWidth = 2, ...rest }) => {
+export const DeformablePolygon = ({
+  x = 0,
+  y = 0,
+  width = 100,
+  height = 100,
+  points: initialPoints,
+  isEditing = false,
+  onUpdate,
+  fill = '#ccc',
+  stroke = '#000',
+  strokeWidth = 2,
+  ...rest
+}) => {
   const [points, setPoints] = useState(
     initialPoints || [
       { x: 0, y: 0 },
@@ -25,7 +37,7 @@ export const DeformablePolygon = ({ x = 0, y = 0, width = 100, height = 100, poi
         sceneFunc={(ctx, shape) => {
           ctx.beginPath();
           ctx.moveTo(points[0].x, points[0].y);
-          points.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+          points.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
           ctx.closePath();
           ctx.fillStrokeShape(shape);
         }}
@@ -48,12 +60,12 @@ export const DeformablePolygon = ({ x = 0, y = 0, width = 100, height = 100, poi
               stroke="#2196f3"
               strokeWidth={2}
               draggable
-              onDragMove={e => updatePoint(i, { x: e.target.x(), y: e.target.y() })}
+              onDragMove={(e) => updatePoint(i, { x: e.target.x(), y: e.target.y() })}
             />
           ))}
 
           <Line
-            points={points.flatMap(p => [p.x, p.y]).concat([points[0].x, points[0].y])}
+            points={points.flatMap((p) => [p.x, p.y]).concat([points[0].x, points[0].y])}
             stroke="#2196f3"
             strokeWidth={1}
             dash={[4, 4]}

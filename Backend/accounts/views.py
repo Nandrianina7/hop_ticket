@@ -395,7 +395,7 @@ class AllOrganisatorView(generics.ListAPIView):
             return Admin.objects.none()
         return Admin.objects.filter(
                 role__in=['Organizer', 'Event_organizer']
-            ).annotate(event_count=Count('event')).prefetch_related('event')
+            ).annotate(event_count=Count('event')).prefetch_related('event', 'cinemas', 'eventSite')
     
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
