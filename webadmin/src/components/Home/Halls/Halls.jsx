@@ -111,7 +111,7 @@ const Halls = ({
       }
     };
     showCinemaHalls();
-  }, [selectedCinema, onGetCinemaHalls]);
+  }, [selectedCinema]);
 
   React.useEffect(() => {
     if (cinemaList && cinemaList.length > 0) {

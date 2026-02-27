@@ -1,4 +1,4 @@
-import { alpha, Box, Paper, Stack, Tooltip, Typography } from "@mui/material";
+import { alpha, Box, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import {
   LocationOn as LocationIcon,
   CalendarToday as CalendarIcon,
@@ -6,7 +6,7 @@ import {
   Assessment as TicketIcon,
 } from '@mui/icons-material';
 
-const EventInfo = ({org}) => {
+const EventInfo = ({ org }) => {
   const formatEventDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -49,17 +49,17 @@ const EventInfo = ({org}) => {
                 {[
                   {
                     icon: <CalendarIcon sx={{ fontSize: 14, color: 'text.secondary' }} />,
-                    text: formatEventDate(event.date)
+                    text: formatEventDate(event.date),
                   },
                   {
                     icon: <LocationIcon sx={{ fontSize: 14, color: 'text.secondary' }} />,
-                    text: event.venue
-                  }
+                    text: event.venue,
+                  },
                 ].map((item, index) => (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }} key={index}>
                     {item.icon}
                     <Typography variant="caption" color="text.secondary">
-                    {item.text}
+                      {item.text}
                     </Typography>
                   </Box>
                 ))}

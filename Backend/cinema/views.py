@@ -2497,3 +2497,33 @@ class CalendarDateDetailView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SelectedOrganizerMoviesView(APIView):
+    """
+        Cette class peremt d'obtenir tout les 
+        films qui ont des sessions dans la salle appartient 
+        à l'organisateur selectionné
+    """
+    def get(self, request, organizerId):
+        if not organizerId:
+            return Response({
+                'message': 'No organizer was selected',
+                'success': False
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            movies = Movie.objects.filter(
+                    Q(created_by_id=organizerId) | Q(sessions__hall__cinema__organizer=organizerId)
+                ).distinct()
+
+            serializer = MovieWithSessionSerializer(movies, many=True)
+            return Response({
+                'message': 'Load data from server',
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'message': 'Failed to get organiser movie',
+                'error': str(e)
+            })
