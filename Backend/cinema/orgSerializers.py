@@ -90,10 +90,6 @@ class OrganizerSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "cinemas"]
 
 
-# from rest_framework import serializers
-# from .models import Cinema, CinemaHall, Seat, Movie, MovieSession
-
-
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat

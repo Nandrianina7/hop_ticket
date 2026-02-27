@@ -11,14 +11,13 @@ import {
   Divider,
   Avatar,
 } from '@mui/material';
-import {
-  ExpandMore as ExpandMoreIcon,
-  Event as EventIcon,
-} from '@mui/icons-material';
+import { ExpandMore as ExpandMoreIcon, Event as EventIcon, Movie } from '@mui/icons-material';
 import { useState } from 'react';
 import { stringToColor } from '../../../utils/stringToColor';
 import CountLen from './CountLen';
 import EventInfo from './EventInfo';
+import CinemaInfo from './CinemaInfo';
+import { Link } from 'react-router-dom';
 
 const History = ({ organizators = [] }) => {
   const [expandedOrg, setExpandedOrg] = useState(null);
@@ -62,6 +61,7 @@ const History = ({ organizators = [] }) => {
               }}
             >
               <CardContent sx={{ p: 2 }}>
+
                 <Box
                   sx={{
                     display: 'flex',
@@ -118,13 +118,24 @@ const History = ({ organizators = [] }) => {
                       minWidth: 100,
                     }}
                   >
-                    <CountLen
-                      length={org.event?.length || 0}
-                      title={'Total event'}
-                      label={'Events'}
-                    />
+                    <Link 
+                      to={`/organizer/data?type=${
+                        org.role === 'event_organizer' ? 'event': 'cinema'
+                      }&organizerId=${org.id}`} 
+                      style={{ textDecoration: 'none'}}
+                    >
+                      <CountLen
+                        length={
+                          org.role === 'event_organizer' ? org.event?.length : org.total_halls || 0
+                        }
+                        title={
+                          org.role === 'event_organizer' ? "Total d'évenement" : 'Total de Salle'
+                        }
+                        label={org.role === 'event_organizer' ? 'Evenement' : 'Salle'}
+                      />
+                    </Link>
 
-                    {org.event?.length > 0 && (
+                    {(org.event?.length > 0 || org.cinemas?.length > 0) && (
                       <IconButton
                         onClick={() => handleExpandClick(org.id)}
                         sx={{
@@ -137,20 +148,39 @@ const History = ({ organizators = [] }) => {
                     )}
                   </Box>
                   <CountLen
-                    length={org.eventSite.length || 0}
-                    title={'Total site'}
-                    label={'Site'}
+                    length={
+                      org.role === 'event_organizer'
+                        ? org.eventSite.length
+                        : org.total_movies_with_sessions || 0
+                    }
+                    title={org.role === 'event_organizer' ? 'Total site' : 'Total de films'}
+                    label={org.role === 'event_organizer' ? 'Site' : 'Films'}
                   />
                 </Box>
-
+                
                 {/* Events section - collapsible */}
-                {org.event?.length > 0 && (
+                {org.role === 'event_organizer' && org.event?.length > 0 && (
                   <Collapse in={expandedOrg === org.id} timeout="auto" unmountOnExit>
                     <Box sx={{ mt: 3 }}>
                       <Divider sx={{ mb: 2 }}>
                         <Chip label="Events" size="small" icon={<EventIcon />} variant="outlined" />
                       </Divider>
                       <EventInfo org={org} />
+                    </Box>
+                  </Collapse>
+                )}
+                {org.role === 'organizer' && org.cinemas.length > 0 && (
+                  <Collapse in={expandedOrg === org.id} timeout="auto" unmountOnExit>
+                    <Box sx={{ mt: 3 }}>
+                      <Divider sx={{ mb: 2 }}>
+                        <Chip
+                          label={org.role === 'event_organizer' ? 'Events' : 'Cinema'}
+                          size="small"
+                          icon={org.role === 'event_organizer' ? <EventIcon /> : <Movie />}
+                          variant="outlined"
+                        />
+                      </Divider>
+                      <CinemaInfo org={org} />
                     </Box>
                   </Collapse>
                 )}

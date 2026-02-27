@@ -34,8 +34,8 @@ urlpatterns = [
   path('promocodes/', views.PromoCodeCreateView.as_view(), name='promocode-create'),
   path('promocodes/session/<int:pk>/', views.PromoCodeCreateView.as_view(), name='promocode-craete'),
   path('promocodes/movie/<int:pk>/', views.PromoCodeCreateWithMovieView.as_view(), name='promocode-craete'),
-  path ('restaurantitem/categories/', views.RestaurantItemCategoryView.as_view(), name='categories'),
-
+  path('restaurantitem/categories/', views.RestaurantItemCategoryView.as_view(), name='categories'),
+  path('organizer/data/<int:organizerId>/', views.SelectedOrganizerMoviesView.as_view(), name='organizer mivie'), 
       # mobile app -----------------------
       
   path('movies/', views.MovieListView.as_view(), name='movie-list'),
