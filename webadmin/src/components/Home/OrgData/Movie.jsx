@@ -1,6 +1,7 @@
 import { Box } from "@mui/material"
 import { useEffect, useState } from "react"
 import api from "../../../api/api"
+import Event from "./Event";
 
 const Movie = ({ org_id }) => {
   const [movies, setMovie] = useState([]);
@@ -31,6 +32,7 @@ const Movie = ({ org_id }) => {
       {movies.map((movie, index) => (
         <p key={index}>{movie.title}</p>
       ))}
+      <Event org_id={org_id} />
     </Box>
   )
 }

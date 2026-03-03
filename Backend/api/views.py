@@ -21,7 +21,22 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .models import Event, EventPlan, EventSite, FCMToken, Ticket, PriceTier, EventRating, VenuePlan, ViewEventLocation
 from .security import generate_secure_qr_data 
-from .serializers import EVentLocationSerializer, EventPlanSerializer, EventSerializer, EventSiteLocationsSerializer, EventSiteSerializer, FCMTokenSerializer, TicketSerializer, TicketWebSerializer, EventRatingSerializer, Event_Serializer, VenuePlanSerializer, VenuePlanSerializer, PriceSerializer, ViewEventLocationSerializer
+from .serializers import (
+   EVentLocationSerializer, 
+   EventPlanSerializer, 
+   EventSerializer, 
+   EventSiteLocationsSerializer, 
+   EventSiteSerializer, 
+   FCMTokenSerializer, 
+   TicketSerializer, 
+   TicketWebSerializer, 
+   EventRatingSerializer, 
+   Event_Serializer, 
+   VenuePlanSerializer, 
+   VenuePlanSerializer, 
+   PriceSerializer, 
+   ViewEventLocationSerializer
+)
 from django.utils import timezone
 from rest_framework.generics import RetrieveAPIView
 from api.auth import UUIDAuthentication
@@ -76,7 +91,58 @@ def mvola_callback(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+class OrganizerEventsView(APIView):
+    """
+        Cette api est utilisee a obtebir les evenements creer par un organisateur selectiionne
+    """
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request, creator):
+       
+       try:
+          organizatir = Admin.objects.get(id=creator)
+          if not organizatir:
+             return Response({
+                'message': 'Maybe the selected orgnaizer is not an event organizator',
+                'sucess': False
+             }, status=status.HTTP_401_UNAUTHORIZED)
+          try:
+             events = Event.objects.filter(organizer= organizatir.id)
+             serializer = Event_Serializer(events, many=True)
+             if not serializer.data:
+                return Response({
+                   'message': 'No event found',
+                   'success': False
+                }, status=status.HTTP_204_NO_CONTENT)
+             return Response({
+                'message': 'Successfully load data',
+                'data': serializer.data,
+                'success': True
+             }, status=status.HTTP_200_OK)
+          except Exception as inner_e:
+             return Response({
+                'message': 'error to load data',
+                'error': str(inner_e),
+                'success': False
+             })
+          
+       except Admin.DoesNotExist as not_f:
+          return Response({
+             'message': 'The selected admin is not exist',
+             'error': str(not_f),
+             'success': False
+          }) 
+       except Exception as e:
+          return Response({
+             'message': 'Something went wrong',
+             'error': str(e),
+             'success': False
+          })
+
+
+
+          
+      
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 # @parser_classes([MultiPartParser, FormParser])
