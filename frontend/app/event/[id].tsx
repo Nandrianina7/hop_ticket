@@ -34,6 +34,7 @@ import PriceLegendCompact from './PriceLegendCompact';
 import SelectedSeatsBill from './SelectedSeatsBill';
 import SeatingMap from '@/components/SeatMap';
 import { SeatingLayout } from '@/components/type';
+import { styles } from './styles';
 
 type PriceTier = {
   id: number;
@@ -95,25 +96,105 @@ function parseSeatId(id: string) {
 
 function priceForLabel(label: string, tiers: PriceTier[]) {
   const lcl = label.toLowerCase();
-  const matched = tiers.find(t => lcl.includes((t.tier_type || '').toLowerCase()));
-  return matched ? { categoryName: matched.tier_type, price: matched.price } : { categoryName: undefined, price: undefined };
+  
+  // Create a map of possible matches
+  const tierMap: Record<string, string> = {
+    'vip': 'VIP',
+    'public': 'Public',
+    'premium': 'Premium',
+    'standard': 'Standard',
+    // Add more mappings as needed
+  };
+  
+  // Try to find by exact match
+  let matched = tiers.find(t => lcl.includes((t.tier_type || '').toLowerCase()));
+  
+  // Try by mapped values
+  if (!matched) {
+    for (const [key, value] of Object.entries(tierMap)) {
+      if (lcl.includes(key)) {
+        matched = tiers.find(t => t.tier_type === value);
+        break;
+      }
+    }
+  }
+  
+  return matched ? { 
+    categoryName: matched.tier_type, 
+    price: matched.price 
+  } : { 
+    categoryName: undefined, 
+    price: undefined 
+  };
 }
+// In EventDetail.tsx - Update the toSeatBillItems function
 
-function toSeatBillItems(selectionIds: string[], tiers: PriceTier[], status?: string): SeatBillItem[] {
+// In EventDetail.tsx - Completely revised toSeatBillItems function
+
+function toSeatBillItems(
+  selectionIds: string[], 
+  tiers: PriceTier[], 
+  sections: any[], // Pass the sections data
+  status?: string
+): SeatBillItem[] {
   return (selectionIds || []).map((idStr) => {
+    // Find which section this seat belongs to
+    let seatSection = null;
+    let seatData = null;
+    
+    // Loop through sections to find the seat
+    for (const section of sections) {
+      const foundSeat = section.seats?.find((s: any) => s.id === idStr);
+      if (foundSeat) {
+        seatSection = section;
+        seatData = foundSeat;
+        break;
+      }
+    }
+    
+    // Get tier from section if available
+    const tierFromSection = seatSection?.tier || seatSection?.name;
+    
+    // Parse seat ID for fallback
     const { label, row, number } = parseSeatId(idStr);
-    const { categoryName, price } = priceForLabel(label, tiers);
-
+    
+    // Find matching price tier
+    let matchedTier = null;
+    let categoryName = undefined;
+    let price = undefined;
+    
+    if (tierFromSection) {
+      // Try to match by section tier
+      matchedTier = tiers.find(t => 
+        t.tier_type.toLowerCase() === tierFromSection.toLowerCase() ||
+        tierFromSection.toLowerCase().includes(t.tier_type.toLowerCase()) ||
+        t.tier_type.toLowerCase().includes(tierFromSection.toLowerCase())
+      );
+    }
+    
+    // If no match, try by label
+    if (!matchedTier) {
+      matchedTier = tiers.find(t => 
+        label.toLowerCase().includes(t.tier_type.toLowerCase()) ||
+        t.tier_type.toLowerCase().includes(label.toLowerCase())
+      );
+    }
+    
+    if (matchedTier) {
+      categoryName = matchedTier.tier_type;
+      price = matchedTier.price;
+    }
+    
     return {
       id: idStr,
-      categoryName,      // e.g., "VIP", "ARGENT"
-      label,             // e.g., "VIP"
-      row,               // e.g., "A"
-      number,            // e.g., "1"
-      price,             // numeric price from tier
-      status, 
-      tier: categoryName           // optional (e.g., "Selected")
-    } as SeatBillItem;
+      categoryName: categoryName || tierFromSection || label,
+      label: label,
+      row: seatData?.row || row,
+      number: seatData?.number || number,
+      price: price || 0,
+      status,
+      tier: categoryName || tierFromSection || label,
+    };
   });
 }
 
@@ -162,10 +243,6 @@ function buildCategories(labels: LabelItem[], tiers: PriceTier[]): Category[] {
   return categories;
 }
 
-
-
-
-
 export default function EventDetail() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const router = useRouter();
@@ -181,10 +258,21 @@ export default function EventDetail() {
   const [selection, setSelection] = useState<any[]>([]);
   const [metadata, setMetadata] = useState<any>(null);
 
-  const handleSelectionChange = useCallback((ids: string[]) => {
-  const billItems = toSeatBillItems(ids, priceTiers, "Selected");
+// In EventDetail.tsx - Update handleSelectionChange
+
+const handleSelectionChange = useCallback((ids: string[]) => {
+  // Get all sections from the current layout
+  const allSections = venuePlans.flatMap(plan => {
+    const layout = typeof plan.metadata === 'string' 
+      ? JSON.parse(plan.metadata) 
+      : plan.metadata;
+    return layout?.sections || [];
+  });
+  
+  const billItems = toSeatBillItems(ids, priceTiers, allSections, "Selected");
+  console.log('Generated bill items with sections:', billItems);
   setSelection(billItems);
-}, [priceTiers]);
+}, [priceTiers, venuePlans]);
 
   function filterMetadataSeats(metadata: any,seats: any): any[] {
     const seat: any[]= [];
@@ -200,8 +288,6 @@ export default function EventDetail() {
     console.log("metaData modifier :",metadata.seats)
     return seat;
   }
-
- 
 
   const screenWidth = Dimensions.get('window').width;
   const horizontalPadding = 20 * 2;
@@ -237,6 +323,20 @@ export default function EventDetail() {
     });
 
   }, [id]);
+  useEffect(() => {
+  const loadPriceTiers = async () => {
+    if (!id) return;
+    try {
+      const eventData = await fetchEventPriceTiers(id);
+      console.log('Types de tickets chargés:', eventData?.price_tiers);
+      setPriceTiers(eventData?.price_tiers || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des types de tickets:', error);
+    }
+  };
+
+  loadPriceTiers();
+}, [id]);
 
     const handleBilling = async () => {
       let sum=0;
@@ -624,59 +724,115 @@ const dateLong = formatDateLong(event.date);
           </Text>
         </View>
 
-        {venuePlans.slice(venuePlans.length - 1).map((plan) => {
-          const metaRaw = plan.metadata ?? plan;
-          // specific parsing logic
-          const meta = typeof metaRaw === 'string' 
-            ? (() => { try { return JSON.parse(metaRaw); } catch { return null; } })() 
-            : metaRaw;
-          
-          const layout = metaRaw as unknown as SeatingLayout;
+       {venuePlans.slice(venuePlans.length - 1).map((plan) => {
+  // Parse the metadata correctly
+  let layout;
+  
+  if (typeof plan.metadata === 'string') {
+    try {
+      layout = JSON.parse(plan.metadata);
+    } catch (e) {
+      console.error('Failed to parse metadata string:', e);
+      layout = null;
+    }
+  } else if (plan.metadata && typeof plan.metadata === 'object') {
+    // If metadata is already an object with sections
+    if (plan.metadata.sections) {
+      layout = plan.metadata;
+    } 
+    // If metadata contains the raw layout structure
+    else {
+      layout = plan.metadata;
+    }
+  } else {
+    // Fallback: try to use plan itself as layout
+    layout = plan;
+  }
 
-          // Define fixed dimensions for the map container
-          const CONTAINER_HEIGHT = 450; 
-          // Adjust width to account for Card padding if necessary, or use full cardWidth
-          const MAP_WIDTH = cardWidth; 
+  // Ensure layout has sections array
+  if (!layout || !layout.sections) {
+    console.warn('Invalid layout structure:', layout);
+    return null;
+  }
 
-          return (
-            <View key={plan.id} style={{ width: '100%' }}>
-              
-              {/* CONTAINER VIEW: Must have fixed height */}
-              <View style={{ 
-                height: CONTAINER_HEIGHT, 
-                width: '100%',
-                backgroundColor: '#f5f5f5', // Light background to see boundaries
-                overflow: 'hidden', // Ensures map doesn't bleed out of card radius
-                borderRadius: 8,
-                marginVertical: 10
-              }}>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                    <SeatingMap
-                      rawLayout={layout}
-                      containerWidth={MAP_WIDTH}
-                      containerHeight={CONTAINER_HEIGHT}
-                      reservedSeatIds={reservedSeatIds}
-                      onSeatPress={(seat) => console.log("seat pressed", seat.id)}
-                     onSelectionChange={handleSelectionChange}
-                    />
-                </GestureHandlerRootView>
-              </View>
+  // Transform the layout to match SeatingLayout type if needed
+  const seatingLayout: SeatingLayout = {
+    sections: layout.sections.map((section: any) => ({
+      id: section.id,
+      name: section.name,
+      color: section.color,
+      tier: section.tier,
+      shapeType: section.shapeType,
+      x: section.x,
+      y: section.y,
+      width: section.width,
+      height: section.height,
+      rotation: section.rotation || 0,
+      seats: (section.seats || []).map((seat: any) => ({
+        id: seat.id,
+        x: seat.x,
+        y: seat.y,
+        row: seat.row,
+        number: seat.number,
+        sectionId: seat.sectionId,
+        seatSize: seat.seatSize || 8,
+        disabled: seat.disabled || false,
+        // Include any other seat properties
+      })),
+      type: section.type || 'section',
+    })),
+    scale: layout.scale || 1,
+  };
 
-              {/* Legend and Bill */}
-              <View style={{ paddingHorizontal: 10 }}>
-                
-                <PriceLegendCompact tiers={priceTiers} categories={ buildCategories(layout?.sections, priceTiers)  ?? []} />
-                <SelectedSeatsBill
-                  seats={selection}
-                  currency="MGA"
-                  feeRate={0}
-                  taxRate={0}
-                  onCheckout={handleBilling}
-                />
-              </View>
-            </View>
-          );
-        })}
+  // Define fixed dimensions for the map container
+  const CONTAINER_HEIGHT = 450; 
+  const MAP_WIDTH = cardWidth; 
+
+  return (
+    <View key={plan.id} style={{ width: '100%' }}>
+      
+      {/* CONTAINER VIEW: Must have fixed height */}
+      <View style={{ 
+        height: CONTAINER_HEIGHT, 
+        width: '100%',
+        backgroundColor: '#f5f5f5',
+        overflow: 'hidden',
+        borderRadius: 8,
+        marginVertical: 10
+      }}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SeatingMap
+            rawLayout={seatingLayout}
+            containerWidth={MAP_WIDTH}
+            containerHeight={CONTAINER_HEIGHT}
+            reservedSeatIds={reservedSeatIds}
+            onSeatPress={(seat) => {
+              console.log("Seat pressed - full seat data:", seat);
+              console.log("Seat ID:", seat.id);
+              console.log("Seat section ID:", seat.sectionId);
+            }}
+            onSelectionChange={handleSelectionChange}
+          />
+        </GestureHandlerRootView>
+      </View>
+
+      {/* Legend and Bill */}
+      <View style={{ paddingHorizontal: 10 }}>
+        <PriceLegendCompact 
+          tiers={priceTiers} 
+          categories={buildCategories(layout?.sections, priceTiers) ?? []} 
+        />
+        <SelectedSeatsBill
+          seats={selection}
+          currency="MGA"
+          feeRate={0}
+          taxRate={0}
+          onCheckout={handleBilling}
+        />
+      </View>
+    </View>
+  );
+})}
       </Card.Content>
     </Card>
   </Animatable.View>
@@ -687,240 +843,3 @@ const dateLong = formatDateLong(event.date);
 }
 
 const { width } = Dimensions.get('window');
-const styles = StyleSheet.create({
-  cardContentNoPadding: {
-    padding: 0, // Optional: if you want the map to touch the edges of the card
-    paddingBottom: 20,
-  },
-   safe: { flex: 1, backgroundColor: "#fff" },
-  center: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    padding: 20,
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 40,
-    flexGrow: 1, // CORRECTION IMPORTANTE: Permet au contenu de s'étendre
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginHorizontal: 10,
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-  card: {
-    marginBottom: 20,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  cardContent: {
-    padding: 20,
-  },
-  image: {
-    backgroundColor: '#eee',
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  daysBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  todayBadge: {
-    backgroundColor: '#FF6B6B',
-  },
-  expiredBadge: {
-    backgroundColor: '#95a5a6',
-  },
-  daysBadgeText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  titleRowMain: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  titleLeft: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  eventName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#2c3e50',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  metaText: {
-    color: '#666',
-    marginLeft: 6,
-    fontSize: 14,
-  },
-  timePill: {
-    backgroundColor: '#e91e63',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#e91e63',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  timePillText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  descriptionContainer: {
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  descriptionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#2c3e50',
-  },
-  description: {
-    color: '#555',
-    lineHeight: 22,
-    fontSize: 14,
-  },
-  divider: {
-    marginVertical: 16,
-    backgroundColor: '#ecf0f1',
-  },
-  detailsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  detailItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    marginTop: 4,
-    marginBottom: 2,
-    textAlign: 'center',
-  },
-  detailValue: {
-    fontSize: 12,
-    color: '#2c3e50',
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  pricingCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  pricingTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    textAlign: 'center',
-  },
-  venuePlanSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    marginTop: 15,
-  },
-  venuePlanImageContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bookingDescription: {
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#666',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  bookButton: {
-    borderRadius: 12,
-    paddingVertical: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-  },
-  bookButtonContent: {
-    paddingVertical: 6,
-  },
-});
