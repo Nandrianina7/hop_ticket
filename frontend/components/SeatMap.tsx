@@ -154,14 +154,20 @@ const SeatingMap: React.FC<Props> = ({
     []
   );
 
-  const seatState = useCallback(
-    (id: string): SeatState => {
-      if (reservedSeatIds.includes(id)) return "reserved";
-      if (selectedSet.has(id)) return "selected";
-      return "available";
-    },
-    [reservedSeatIds, selectedSet]
-  );
+const seatState = useCallback(
+  (id: string): SeatState => {
+    // First check if the seat is disabled in the layout
+    const seat = normalized.sections
+      .flatMap(s => s.seats)
+      .find(s => s.id === id);
+    
+    if (seat?.disabled) return "disabled";
+    if (reservedSeatIds.includes(id)) return "reserved";
+    if (selectedSet.has(id)) return "selected";
+    return "available";
+  },
+  [reservedSeatIds, selectedSet, normalized.sections]
+);
 
   /* ===========================
      GESTURES (PAN / PINCH)
@@ -250,65 +256,68 @@ const SeatingMap: React.FC<Props> = ({
         <Animated.View style={animatedStyle}>
           {/* ===== SVG (VISUEL SEULEMENT) ===== */}
           <Svg width={containerWidth} height={containerHeight}>
-            {normalized.sections.map((sec) => (
-              <G key={sec.id}>
-                <SectionItem
-                  section={sec}
-                  scaledX={sec.x}
-                  scaledY={sec.y}
-                  scaledW={sec.width}
-                  scaledH={sec.height}
-                  onPress={() => snapToSection(sec)}
-                />
+  {normalized.sections.map((sec) => (
+    <G key={sec.id}>
+      <SectionItem
+        section={sec}
+        scaledX={sec.x}
+        scaledY={sec.y}
+        scaledW={sec.width}
+        scaledH={sec.height}
+        onPress={() => snapToSection(sec)}
+      />
 
-                {sec.seats.map((seat) => (
-                  <SeatItem
-                    key={seat.id}
-                    cx={sec.x + seat.x}
-                    cy={sec.y + seat.y}
-                    r={seat.seatSize}
-                    state={seatState(seat.id)}
-                  />
-                ))}
-              </G>
-            ))}
-          </Svg>
+      {/* Filter out disabled seats when rendering SeatItems */}
+      {sec.seats
+        .filter(seat => !seat.disabled) // Only render non-disabled seats
+        .map((seat) => (
+          <SeatItem
+            key={seat.id}
+            cx={sec.x + seat.x}
+            cy={sec.y + seat.y}
+            r={seat.seatSize}
+            state={seatState(seat.id)}
+          />
+        ))}
+    </G>
+  ))}
+</Svg>
 
-          {/* ===== OVERLAY TACTILE (LA CLÉ 🔥) ===== */}
-          <View
-            style={StyleSheet.absoluteFill}
-            pointerEvents="box-none"
-          >
-            {normalized.sections.flatMap((sec) =>
-              sec.seats.map((seat) => {
-                const cx = sec.x + seat.x;
-                const cy = sec.y + seat.y;
-                const r = seat.seatSize * 2;
-                const isReserved = reservedSeatIds.includes(seat.id);
+{/* ===== OVERLAY TACTILE (LA CLÉ 🔥) ===== */}
+<View
+  style={StyleSheet.absoluteFill}
+  pointerEvents="box-none"
+>
+  {normalized.sections.flatMap((sec) =>
+    sec.seats
+      .filter(seat => !seat.disabled) // Don't create pressable for disabled seats
+      .map((seat) => {
+        const cx = sec.x + seat.x;
+        const cy = sec.y + seat.y;
+        const r = seat.seatSize * 2;
+        const isReserved = reservedSeatIds.includes(seat.id);
 
-                return (
-                  <Pressable
-                    // key={seat.id}
-                   key={`sec-${sec.id}-seat-${seat.id}`}
-
-                    style={{
-                      position: "absolute",
-                      left: cx - r,
-                      top: cy - r,
-                      width: r * 2,
-                      height: r * 2,
-                      borderRadius: r,
-                    }}
-                    disabled={isReserved}
-                    onPress={() => {
-                      toggleSeat(seat.id);
-                      onSeatPress?.(seat);
-                    }}
-                  />
-                );
-              })
-            )}
-          </View>
+        return (
+          <Pressable
+            key={`sec-${sec.id}-seat-${seat.id}`}
+            style={{
+              position: "absolute",
+              left: cx - r,
+              top: cy - r,
+              width: r * 2,
+              height: r * 2,
+              borderRadius: r,
+            }}
+            disabled={isReserved}
+            onPress={() => {
+              toggleSeat(seat.id);
+              onSeatPress?.(seat);
+            }}
+          />
+        );
+      })
+  )}
+</View>
         </Animated.View>
       </GestureDetector>
       {/* ===== CONTROLES ZOOM ===== */}

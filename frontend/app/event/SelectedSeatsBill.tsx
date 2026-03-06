@@ -24,6 +24,7 @@ type Props = {
 };
 
 const toNumber = (v: unknown) => {
+  if (v === undefined || v === null) return 0;
   const n = typeof v === 'string' ? parseFloat(v) : typeof v === 'number' ? v : 0;
   return Number.isFinite(n) ? n : 0;
 };
