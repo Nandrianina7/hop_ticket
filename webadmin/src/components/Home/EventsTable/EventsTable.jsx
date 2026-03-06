@@ -27,7 +27,14 @@ import DeleteDialog from '../../../ui/DeleteDialog';
 import EventInfo from '../../../ui/EventInfo';
 import { getImagePath } from '../../../utils/getImagePath';
 
-const EventsTable = ({ data, onUpdate, onDelete, loading = false, onSaveChange }) => {
+const EventsTable = ({
+  data,
+  onUpdate,
+  onDelete,
+  loading = false,
+  onSaveChange,
+  allow_action = true,
+}) => {
   const theme = useTheme();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(8);
@@ -254,26 +261,32 @@ const EventsTable = ({ data, onUpdate, onDelete, loading = false, onSaveChange }
                 <Box sx={{ position: 'absolute', top: 16, right: 16 }}>{getStatusChip(item)}</Box>
 
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, p: 1.2 }}>
-                  <Box
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {date} • {time}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleMenuOpen(e, item)}
+                  {allow_action && (
+                    <Box
                       sx={{
-                        color: 'text.secondary',
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          color: theme.palette.primary.main,
-                        },
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {date} • {time}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleMenuOpen(e, item)}
+                        sx={{
+                          color: 'text.secondary',
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.main,
+                          },
+                        }}
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </Box>
+                  )}
                   <Typography variant="h6" fontWeight="600" sx={{ lineHeight: 1 }}>
                     {item.name}
                   </Typography>

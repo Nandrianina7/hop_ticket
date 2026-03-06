@@ -1,3 +1,3 @@
-import OrganizerData from "./OrganizerData";
+import OrganizerData from './OrganizerData';
 
 export default OrganizerData;

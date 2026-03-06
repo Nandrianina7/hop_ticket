@@ -684,7 +684,24 @@ class EventPlanNewInsertion(APIView):
          print(str(e))
          return Response({"error": "Failed to save venue, server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+class SelectedOragnizerEventPlanView(APIView):
+   def get(self, request, org_id):
+     try:
+        user_email = str(request.user)
+        user = Admin.objects.get(id=org_id)
+        if user.is_superuser or user.is_staff:
+          eventSite = EventPlan.objects.all()
+        else:
+          eventSite = EventSite.objects.filter(organizer=user.id)
+        serializer2=EventSiteSerializer(eventSite, many=True)
+        # serializer = EventPlanSerializer(plans, many=True)
+        return Response({'data': serializer2.data}, status=status.HTTP_200_OK)
+     except Admin.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+     except Exception as e:
+        print('error', str(e))
+        return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class EventPlanView(APIView):
    permission_classes = [IsAuthenticated]
    def get(self, request,site_name):

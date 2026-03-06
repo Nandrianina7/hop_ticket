@@ -37,6 +37,7 @@ const Halls = ({
   onGetCinemaHalls,
   onDeleteCinema,
   onUpdateCinemaHall,
+  allowedAction = true,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [cinemaIndex, setCinemaIndex] = React.useState(0);
@@ -230,27 +231,29 @@ const Halls = ({
           ))}
         </Tabs>
 
-        <Box sx={{ display: 'flex', gap: 2, p: 1 }}>
-          {role !== 'organizer' && (
-            <Button onClick={() => setOpen(true)} variant="outlined">
-              Add a new cinema
-            </Button>
-          )}
-          {selectedCinema?.name && (
-            <React.Fragment>
-              <Tooltip title={`Crée une nouvelle salle pour ${selectedCinema.name}`}>
-                <IconButton onClick={toggleOpen(true)} sx={{ bgcolor: 'rgba(171, 15, 15, 0.2)' }}>
-                  <Add color="primary" />
-                </IconButton>
-              </Tooltip>
-              {/* <Tooltip title={`Delete ${selectedCinema.name}`}>
+        {allowedAction && (
+          <Box sx={{ display: 'flex', gap: 2, p: 1 }}>
+            {role !== 'organizer' && (
+              <Button onClick={() => setOpen(true)} variant="outlined">
+                Add a new cinema
+              </Button>
+            )}
+            {selectedCinema?.name && (
+              <React.Fragment>
+                <Tooltip title={`Crée une nouvelle salle pour ${selectedCinema.name}`}>
+                  <IconButton onClick={toggleOpen(true)} sx={{ bgcolor: 'rgba(171, 15, 15, 0.2)' }}>
+                    <Add color="primary" />
+                  </IconButton>
+                </Tooltip>
+                {/* <Tooltip title={`Delete ${selectedCinema.name}`}>
                 <IconButton onClick={() => setOpenDelete(true)}>
                   <DeleteOutline color="primary" />
                 </IconButton>
               </Tooltip> */}
-            </React.Fragment>
-          )}
-        </Box>
+              </React.Fragment>
+            )}
+          </Box>
+        )}
       </Paper>
 
       {cinemaHalls.length > 0 ? (
@@ -269,7 +272,6 @@ const Halls = ({
 
           {cinemaHalls.map((hall, index) => (
             <TabPanel key={hall.id} value={hallIndex} index={index}>
-              <Typography variant="h6">{hall.name}</Typography>
               {hall.seats.map((seat, index) => (
                 <Seat
                   id={selectedCinema?.id}
@@ -284,6 +286,7 @@ const Halls = ({
                   onUpdateHall={handleUpdate}
                   hall_id={hall.id}
                   type="display"
+                  allowedAction={allowedAction}
                 />
               ))}
             </TabPanel>

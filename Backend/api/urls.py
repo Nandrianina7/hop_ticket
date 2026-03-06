@@ -39,6 +39,7 @@ urlpatterns = [
   path('event_plan/', views.EventPlanView.as_view(), name='event_plan'),
   path('new/event_plan/',views.EventPlanNewInsertion.as_view(),name='new_event_plan'),
   path('future/event-locations/', views.FutureEventLocationListAPIView.as_view(), name='future-event-locations'),
+  path('organizer/plan/<int:org_id>/', views.SelectedOragnizerEventPlanView.as_view(), name='organizer_plan'),
   path('mvola/initPayment/',views.MvolaView.as_view(),name='mvola_init_payment'),
   path('eventLocation/',views.EventlocationView.as_view(),name='event-location'),
   # path("mvola/callback/", views.MvolaCallbackView.as_view(), name="mvola-callback"),

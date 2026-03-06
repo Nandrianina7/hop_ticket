@@ -20,7 +20,16 @@ import {
 import { Chair, Star, Block, Save, Clear, TheaterComedy, Update } from '@mui/icons-material';
 import { SeatGridContainer, StatCard, StyledPaper, SeatButton } from '../../../utils/StyleForSeat';
 
-const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...props }) => {
+const Seat = ({
+  id,
+  onSaveHall,
+  initialLayout,
+  type,
+  onUpdateHall,
+  hall_id,
+  allowedAction,
+  ...props
+}) => {
   const [rows, setRows] = React.useState(initialLayout?.rows || 6);
   const [cols, setCols] = React.useState(initialLayout?.cols || 8);
   const [disabledSeats, setDisabledSeats] = React.useState(initialLayout?.disabledSeats || []);
@@ -186,42 +195,44 @@ const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...p
                 }}
               >
                 <Typography variant="h6">plan de salle</Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Tooltip title="VIP Mode">
-                    <IconButton
-                      color={onAddToVIP ? 'warning' : 'default'}
-                      onClick={() => {
-                        setOnAddToVIP(!onAddToVIP);
-                        setOnAddToDisabled(false);
-                      }}
-                    >
-                      <Star />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Désactivation Mode">
-                    <IconButton
-                      color={onAddToDisabled ? 'error' : 'default'}
-                      onClick={() => {
-                        setOnAddToDisabled(!onAddToDisabled);
-                        setOnAddToVIP(false);
-                      }}
-                    >
-                      <Block />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Reset Layout">
-                    <IconButton color="default" onClick={resetLayout}>
-                      <Clear />
-                    </IconButton>
-                  </Tooltip>
-                  {onUpdateHall && type !== 'create' && (
-                    <Tooltip title="modifier La salle">
-                      <IconButton color="info" onClick={handleManualUpdate}>
-                        <Update />
+                {allowedAction && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="VIP Mode">
+                      <IconButton
+                        color={onAddToVIP ? 'warning' : 'default'}
+                        onClick={() => {
+                          setOnAddToVIP(!onAddToVIP);
+                          setOnAddToDisabled(false);
+                        }}
+                      >
+                        <Star />
                       </IconButton>
                     </Tooltip>
-                  )}
-                </Box>
+                    <Tooltip title="Désactivation Mode">
+                      <IconButton
+                        color={onAddToDisabled ? 'error' : 'default'}
+                        onClick={() => {
+                          setOnAddToDisabled(!onAddToDisabled);
+                          setOnAddToVIP(false);
+                        }}
+                      >
+                        <Block />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Reset Layout">
+                      <IconButton color="default" onClick={resetLayout}>
+                        <Clear />
+                      </IconButton>
+                    </Tooltip>
+                    {onUpdateHall && type !== 'create' && (
+                      <Tooltip title="modifier La salle">
+                        <IconButton color="info" onClick={handleManualUpdate}>
+                          <Update />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                )}
               </Box>
 
               {onAddToVIP && (
@@ -359,7 +370,7 @@ const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...p
                 label="Show JSON Layout"
               /> */}
 
-              {type === 'create' ? (
+              {type === 'create' && allowedAction ? (
                 <Button
                   fullWidth
                   variant="contained"
@@ -370,21 +381,23 @@ const Seat = ({ id, onSaveHall, initialLayout, type, onUpdateHall, hall_id, ...p
                   Enregister la salle
                 </Button>
               ) : (
-                <Box>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Update />}
-                    sx={{ mt: 1, mb: 1 }}
-                    onClick={handleManualUpdate}
-                    color="info"
-                  >
-                    modifier la salle
-                  </Button>
-                  <Button variant="outlined" fullWidth onClick={cancelChange}>
-                    Annuler la mise à jour
-                  </Button>
-                </Box>
+                allowedAction && (
+                  <Box>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<Update />}
+                      sx={{ mt: 1, mb: 1 }}
+                      onClick={handleManualUpdate}
+                      color="info"
+                    >
+                      modifier la salle
+                    </Button>
+                    <Button variant="outlined" fullWidth onClick={cancelChange}>
+                      Annuler la mise à jour
+                    </Button>
+                  </Box>
+                )
               )}
             </CardContent>
           </Card>

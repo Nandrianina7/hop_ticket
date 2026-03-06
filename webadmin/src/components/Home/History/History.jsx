@@ -61,7 +61,6 @@ const History = ({ organizators = [] }) => {
               }}
             >
               <CardContent sx={{ p: 2 }}>
-
                 <Box
                   sx={{
                     display: 'flex',
@@ -118,11 +117,11 @@ const History = ({ organizators = [] }) => {
                       minWidth: 100,
                     }}
                   >
-                    <Link 
+                    <Link
                       to={`/organizer/data?type=${
-                        org.role === 'event_organizer' ? 'event': 'cinema'
-                      }&organizerId=${org.id}`} 
-                      style={{ textDecoration: 'none'}}
+                        org.role === 'event_organizer' ? 'evenement' : 'cinema'
+                      }&organizerId=${org.id}&xme=${org.full_name}`}
+                      style={{ textDecoration: 'none' }}
                     >
                       <CountLen
                         length={
@@ -157,7 +156,7 @@ const History = ({ organizators = [] }) => {
                     label={org.role === 'event_organizer' ? 'Site' : 'Films'}
                   />
                 </Box>
-                
+
                 {/* Events section - collapsible */}
                 {org.role === 'event_organizer' && org.event?.length > 0 && (
                   <Collapse in={expandedOrg === org.id} timeout="auto" unmountOnExit>
