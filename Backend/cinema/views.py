@@ -485,7 +485,44 @@ class OrganizerCinemaView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+class SelectedOrganizerCinemaView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, org_id):
+        print(f"[User] {request.user}")
+        try:
+            user = Admin.objects.get(id=org_id)
+            cinema = Cinema.objects.filter(organizer_id=user.id)
+            serializer = CinemaSerializer(cinema, many=True)
+            print(f"data {serializer.data}")
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        except Cinema.DoesNotExist:
+            return Response(
+                {"message": "Cinema not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Failed to get cinema"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
+class SelectedOrganizerHall(APIView):
+    def get(self, request, org_id):
+        try:
+            user = Admin.objects.get(id=org_id)
+        except Admin.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+        if user.role == "organizer":
+            cinemas = Cinema.objects.filter(organizer=user)
+        else:
+            cinemas = Cinema.objects.all()
+
+        serializer = CinemaWithHallsSerializers(cinemas, many=True)
+        print("data", serializer.data)
+        return Response(
+            {"message": "Data fetched", "data": serializer.data}, status=200
+        )
+    
 class OrganizerCinemaHall(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]

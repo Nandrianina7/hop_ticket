@@ -36,6 +36,8 @@ urlpatterns = [
   path('promocodes/movie/<int:pk>/', views.PromoCodeCreateWithMovieView.as_view(), name='promocode-craete'),
   path('restaurantitem/categories/', views.RestaurantItemCategoryView.as_view(), name='categories'),
   path('organizer/data/<int:organizerId>/', views.SelectedOrganizerMoviesView.as_view(), name='organizer mivie'), 
+  path('organizer/cinema/list/<int:org_id>/', views.SelectedOrganizerCinemaView.as_view(), name='cinema_organizer_list'),
+  path('organizer/cinema/halls', views.SelectedOrganizerHall.as_view(), name='organizer_halls'),
       # mobile app -----------------------
       
   path('movies/', views.MovieListView.as_view(), name='movie-list'),

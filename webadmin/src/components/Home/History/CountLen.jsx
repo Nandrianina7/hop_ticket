@@ -14,7 +14,7 @@ const CountLen = ({ length, title, label }) => {
           py: 1,
           borderRadius: 2,
           mb: 1,
-          cursor: 'pointer'
+          cursor: 'pointer',
         }}
       >
         <Typography variant="h6" fontWeight={600} color="primary">
