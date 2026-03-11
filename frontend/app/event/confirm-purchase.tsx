@@ -20,6 +20,9 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { buyTicket, fetchEventById, fetchEventPriceTiers } from '../../utils/api';
 import { Ionicons } from '@expo/vector-icons';
+import SelectedSeatsBill from './SelectedSeatsBill';
+import TaxiStep from '../cinema/components/TaxiStep';
+import FoodStep from '../cinema/components/FoodStep';
 
 type PriceTier = {
   id: number;
@@ -41,6 +44,17 @@ type VenuePlan = {
   site_name: string;
   elements: any[];
   metadata: any;
+};
+
+type SeatBillItem = {
+  id: string | number;
+  categoryName?: string;
+  label?: string;
+  row?: string | number;
+  number?: string | number;
+  price?: string | number;
+  status?: string;
+  tier?: string;
 };
 
 // Composant pour l'en-tête
@@ -65,17 +79,12 @@ const PurchaseStepper = ({ step }: { step: number }) => (
     <View style={styles.stepper}>
       <View style={[styles.step, step >= 1 && styles.stepActive]}>
         <Text style={[styles.stepText, step >= 1 && styles.stepTextActive]}>1</Text>
-        <Text style={[styles.stepLabel, step >= 1 && styles.stepLabelActive]}>Type</Text>
+        <Text style={[styles.stepLabel, step >= 1 && styles.stepLabelActive]}>Deplacement</Text>
       </View>
       <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
       <View style={[styles.step, step >= 2 && styles.stepActive]}>
         <Text style={[styles.stepText, step >= 2 && styles.stepTextActive]}>2</Text>
-        <Text style={[styles.stepLabel, step >= 2 && styles.stepLabelActive]}>Quantité</Text>
-      </View>
-      <View style={[styles.stepLine, step >= 3 && styles.stepLineActive]} />
-      <View style={[styles.step, step >= 3 && styles.stepActive]}>
-        <Text style={[styles.stepText, step >= 3 && styles.stepTextActive]}>3</Text>
-        <Text style={[styles.stepLabel, step >= 3 && styles.stepLabelActive]}>Confirmation</Text>
+        <Text style={[styles.stepLabel, step >= 2 && styles.stepLabelActive]}>Confirmation</Text>
       </View>
     </View>
   </View>
@@ -140,278 +149,6 @@ const EventCard = ({ event, tier, theme }: { event: EventType; tier: PriceTier |
   );
 };
 
-// Composant pour la sélection du type de ticket
-const TierSelectionStep = ({ 
-  priceTiers, 
-  selectedTier, 
-  onTierSelect, 
-  onNext,
-  theme 
-}: { 
-  priceTiers: PriceTier[];
-  selectedTier: PriceTier | null;
-  onTierSelect: (tier: PriceTier) => void;
-  onNext: () => void;
-  theme: any;
-}) => {
-  const getTierColor = (tierType: string) => {
-    const colors = {
-      'VIP': '#FFD700',
-      'BRONZE': '#CD7F32',
-      'ARGENT': '#C0C0C0',
-      'PUBLIC': theme.colors.primary,
-    };
-    return colors[tierType as keyof typeof colors] || theme.colors.primary;
-  };
-
-  return (
-    <View style={styles.stepContainer}>
-      <Text variant="titleMedium" style={styles.sectionTitle}>
-        Choisissez votre type de ticket
-      </Text>
-      
-      <View style={styles.tiersContainer}>
-        {priceTiers.map((tier) => {
-          const soldOut = tier.available_quantity <= 0;
-          const tierColor = getTierColor(tier.tier_type);
-          
-          return (
-            <TouchableOpacity
-              key={tier.id}
-              style={[
-                styles.tierCard,
-                selectedTier?.id === tier.id && [styles.tierCardSelected, { borderColor: tierColor }],
-                soldOut && styles.tierCardDisabled
-              ]}
-              onPress={() => !soldOut && onTierSelect(tier)}
-              disabled={soldOut}
-            >
-              <View style={styles.tierHeader}>
-                <View style={[styles.tierBadge, { backgroundColor: tierColor }]}>
-                  <Text style={styles.tierBadgeText}>{tier.tier_type}</Text>
-                </View>
-                {soldOut && (
-                  <View style={styles.soldOutBadge}>
-                    <Text style={styles.soldOutText}>Sold Out</Text>
-                  </View>
-                )}
-              </View>
-              
-              <Text style={styles.tierPrice}>{tier.price}MGA</Text>
-              <Text style={styles.tierAvailability}>
-                {soldOut ? 'Épuisé' : `${tier.available_quantity} places disponibles`}
-              </Text>
-              
-              {selectedTier?.id === tier.id && (
-                <View style={[styles.selectedIndicator, { backgroundColor: tierColor }]}>
-                  <Ionicons name="checkmark" size={16} color="#fff" />
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <Button
-        mode="contained"
-        onPress={onNext}
-        disabled={!selectedTier}
-        style={styles.nextButton}
-        contentStyle={styles.nextButtonContent}
-      >
-        Continuer vers la quantité
-      </Button>
-    </View>
-  );
-};
-
-// Composant pour la sélection de la quantité
-const QuantitySelectionStep = ({
-  selectedTier,
-  quantity,
-  onQuantityChange,
-  onNext,
-  onBack,
-  theme
-}: {
-  selectedTier: PriceTier;
-  quantity: number;
-  onQuantityChange: (quantity: number) => void;
-  onNext: () => void;
-  onBack: () => void;
-  theme: any;
-}) => {
-  const totalPrice = selectedTier.price * quantity;
-
-  const incrementQuantity = () => {
-    if (quantity < selectedTier.available_quantity) {
-      onQuantityChange(quantity + 1);
-    }
-  };
-
-  const decrementQuantity = () => {
-    if (quantity > 1) {
-      onQuantityChange(quantity - 1);
-    }
-  };
-
-  return (
-    <View style={styles.stepContainer}>
-      <Text variant="titleMedium" style={styles.sectionTitle}>
-        Sélectionnez la quantité
-      </Text>
-      
-      <View style={styles.quantityStepper}>
-        <TouchableOpacity
-          style={[
-            styles.stepperButton,
-            quantity <= 1 && styles.stepperButtonDisabled
-          ]}
-          onPress={decrementQuantity}
-          disabled={quantity <= 1}
-        >
-          <Ionicons 
-            name="remove" 
-            size={24} 
-            color={quantity <= 1 ? '#ccc' : theme.colors.primary} 
-          />
-        </TouchableOpacity>
-        
-        <View style={styles.quantityDisplay}>
-          <Text style={styles.quantityText}>{quantity}</Text>
-          <Text style={styles.quantityLabel}>ticket(s)</Text>
-        </View>
-        
-        <TouchableOpacity
-          style={[
-            styles.stepperButton,
-            quantity >= selectedTier.available_quantity && styles.stepperButtonDisabled
-          ]}
-          onPress={incrementQuantity}
-          disabled={quantity >= selectedTier.available_quantity}
-        >
-          <Ionicons 
-            name="add" 
-            size={24} 
-            color={quantity >= selectedTier.available_quantity ? '#ccc' : theme.colors.primary} 
-          />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.quantityHint}>
-        Maximum {selectedTier.available_quantity} places disponibles
-      </Text>
-
-      {/* Résumé du prix */}
-      <View style={styles.pricePreview}>
-        <View style={styles.priceRow}>
-          <Text style={styles.priceLabel}>{quantity} × {selectedTier.price}MGA</Text>
-          <Text style={styles.priceValue}>{totalPrice}MGA</Text>
-        </View>
-      </View>
-
-      <View style={styles.quantityActions}>
-        <Button
-          mode="outlined"
-          onPress={onBack}
-          style={styles.backButtonStep}
-          icon="arrow-left"
-        >
-          Retour
-        </Button>
-        
-        <Button
-          mode="contained"
-          onPress={onNext}
-          style={styles.nextButton}
-          contentStyle={styles.nextButtonContent}
-        >
-          Confirmer la commande
-        </Button>
-      </View>
-    </View>
-  );
-};
-
-// Composant pour la confirmation finale
-const ConfirmationStep = ({
-  event,
-  selectedTier,
-  quantity,
-  loading,
-  onConfirmPurchase,
-  onBack,
-  theme
-}: {
-  event: EventType;
-  selectedTier: PriceTier;
-  quantity: number;
-  loading: boolean;
-  onConfirmPurchase: () => void;
-  onBack: () => void;
-  theme: any;
-}) => {
-  const totalPrice = selectedTier.price * quantity;
-
-  return (
-    <View style={styles.stepContainer}>
-      <View style={styles.confirmationHeader}>
-        <Ionicons name="checkmark-circle" size={48} color="#4CAF50" />
-        <Text variant="titleMedium" style={styles.confirmationTitle}>
-          Récapitulatif de commande
-        </Text>
-      </View>
-
-      <View style={styles.orderDetails}>
-        <View style={styles.orderRow}>
-          <Text style={styles.orderLabel}>Événement:</Text>
-          <Text style={styles.orderValue}>{event.name}</Text>
-        </View>
-        <View style={styles.orderRow}>
-          <Text style={styles.orderLabel}>Type de ticket:</Text>
-          <Text style={styles.orderValue}>{selectedTier.tier_type}</Text>
-        </View>
-        <View style={styles.orderRow}>
-          <Text style={styles.orderLabel}>Quantité:</Text>
-          <Text style={styles.orderValue}>{quantity}</Text>
-        </View>
-        <View style={styles.orderRow}>
-          <Text style={styles.orderLabel}>Prix unitaire:</Text>
-          <Text style={styles.orderValue}>{selectedTier.price}MGA</Text>
-        </View>
-        <Divider style={styles.orderDivider} />
-        <View style={[styles.orderRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>Total:</Text>
-          <Text style={styles.totalValue}>{totalPrice}MGA</Text>
-        </View>
-      </View>
-
-      <View style={styles.finalActions}>
-        <Button
-          mode="outlined"
-          onPress={onBack}
-          style={styles.backButtonStep}
-          icon="arrow-left"
-        >
-          Retour
-        </Button>
-        
-        <Button
-          mode="contained"
-          onPress={onConfirmPurchase}
-          loading={loading}
-          disabled={loading}
-          style={styles.confirmButton}
-          icon="check"
-          contentStyle={styles.confirmButtonContent}
-        >
-          Confirmer l'achat
-        </Button>
-      </View>
-    </View>
-  );
-};
-
 // Composant principal
 export default function ConfirmPurchase() {
   const router = useRouter();
@@ -421,20 +158,32 @@ export default function ConfirmPurchase() {
   // Récupération des paramètres
   const event = JSON.parse(params.event as string) as EventType;
   const venuePlans = params.venuePlans ? JSON.parse(params.venuePlans as string) as VenuePlan[] : [];
-
+  const ticketTotal = Number(params.total);
+  const price = Number(params.price ?? 0);
+  const seat = JSON.parse(params.seats as any) as SeatBillItem[];
+  
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([]);
   const [selectedTier, setSelectedTier] = useState<PriceTier | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [tiersLoading, setTiersLoading] = useState(true);
-
+  const [tiersLoading, setTiersLoading] = useState(false);
+  const [taxiOption, setTaxiOption] = useState({ type: 'none', label: 'Aucun taxi', price: 0 });
+  
   // Animations
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
 
   const screenWidth = Dimensions.get('window').width - 40;
 
+  // Set quantity based on number of seats
+  useEffect(() => {
+    if (seat && seat.length > 0) {
+      setQuantity(seat.length);
+    }
+  }, [seat]);
+
+  // Animation effect
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -448,49 +197,89 @@ export default function ConfirmPurchase() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, slideAnim]);
+  }, [fadeAnim, slideAnim, step]);
 
-  // Charger les types de tickets
-// REMPLACEZ le useEffect existant par celui-ci :
-// Dans confirm-purchase.tsx - CORRIGEZ le useEffect
-useEffect(() => {
-  const loadPriceTiers = async () => {
-    try {
-      // Utilisez la fonction importée fetchEventPriceTiers
-      const eventData = await fetchEventPriceTiers(event.id.toString());
-      setPriceTiers(eventData.price_tiers || []);
-    } catch (error) {
-      console.error('Erreur lors du chargement des types de tickets:', error);
-      Alert.alert('Erreur', 'Impossible de charger les types de tickets');
-    } finally {
-      setTiersLoading(false);
-    }
-  };
+  // Charger les types de tickets et trouver le tier correspondant aux sièges
+  useEffect(() => {
+    const loadPriceTiers = async () => {
+      try {
+        setTiersLoading(true);
+        const eventData = await fetchEventPriceTiers(event.id.toString());
+        const tiers = eventData.price_tiers || [];
+        setPriceTiers(tiers);
+        
+        // Trouver le tier correspondant basé sur le premier siège
+        if (seat && seat.length > 0 && tiers.length > 0) {
+          const firstSeat = seat[0];
+          if (firstSeat.tier || firstSeat.categoryName) {
+            const tierType = (firstSeat.tier || firstSeat.categoryName || '').toString();
+            
+            // Chercher une correspondance (insensible à la casse)
+            const matchingTier = tiers.find((t: any) => 
+              t.tier_type.toLowerCase() === tierType.toLowerCase() ||
+              t.tier_type.toLowerCase().includes(tierType.toLowerCase()) ||
+              tierType.toLowerCase().includes(t.tier_type.toLowerCase())
+            );
+            
+            if (matchingTier) {
+              setSelectedTier(matchingTier);
+              
+              // Vérifier la disponibilité
+              if (matchingTier.available_quantity < seat.length) {
+                Alert.alert(
+                  'Attention', 
+                  `Seulement ${matchingTier.available_quantity} tickets disponibles pour la catégorie ${matchingTier.tier_type}. Vous avez sélectionné ${seat.length} sièges.`
+                );
+              }
+            } else {
+              // Si aucun tier correspondant trouvé, prendre le premier disponible
+              console.warn('Aucun tier correspondant trouvé pour:', tierType);
+              if (tiers.length > 0) {
+                setSelectedTier(tiers[0]);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des types de tickets:', error);
+        Alert.alert('Erreur', 'Impossible de charger les types de tickets');
+      } finally {
+        setTiersLoading(false);
+      }
+    };
 
-  loadPriceTiers();
-}, [event.id]);
+    loadPriceTiers();
+  }, [event.id]);
 
   const handleConfirmPurchase = async () => {
-    if (!selectedTier || quantity <= 0) {
-      Alert.alert('Erreur', 'Veuillez sélectionner au moins 1 ticket');
+    if (!selectedTier) {
+      Alert.alert('Erreur', 'Type de ticket non trouvé');
       return;
     }
 
-    if (quantity > selectedTier.available_quantity) {
-      Alert.alert('Erreur', `Seulement ${selectedTier.available_quantity} tickets disponibles`);
+    if (seat.length > selectedTier.available_quantity) {
+      Alert.alert(
+        'Erreur', 
+        `Seulement ${selectedTier.available_quantity} tickets disponibles pour la catégorie ${selectedTier.tier_type}`
+      );
       return;
     }
 
     setLoading(true);
     try {
-      // Acheter les tickets
-      for (let i = 0; i < quantity; i++) {
-        await buyTicket(event.id, selectedTier.id);
+      // Acheter un ticket pour chaque siège sélectionné
+      for (const seatItem of seat) {
+        await buyTicket(
+          event.id, 
+          selectedTier.id, 
+          seatItem.id.toString(), 
+          1
+        );
       }
 
       Alert.alert(
         'Succès',
-        `${quantity} ticket(s) acheté(s) avec succès!`,
+        `${seat.length} ticket(s) acheté(s) avec succès!`,
         [
           {
             text: 'Voir mes tickets',
@@ -504,16 +293,34 @@ useEffect(() => {
       );
     } catch (error: any) {
       console.error('Erreur lors de l\'achat:', error);
-      Alert.alert(
-        'Erreur',
-        error.message || 'Une erreur s\'est produite lors de l\'achat'
-      );
+      
+      // Gérer les erreurs spécifiques
+      let errorMessage = 'Une erreur s\'est produite lors de l\'achat';
+      
+      if (error.response) {
+        // Erreur de l'API
+        if (error.response.status === 400) {
+          errorMessage = error.response.data.message || 'Certains sièges ne sont plus disponibles';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Événement ou type de ticket non trouvé';
+        } else if (error.response.status === 409) {
+          errorMessage = 'Conflit: certains sièges ont déjà été réservés';
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Erreur', errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const proceedToNextStep = () => {
+    if (!selectedTier) {
+      Alert.alert('Erreur', 'Impossible de déterminer le type de ticket');
+      return;
+    }
     setStep(step + 1);
     // Reset animations
     fadeAnim.setValue(0);
@@ -551,10 +358,11 @@ useEffect(() => {
     ]).start();
   };
 
+
   if (tiersLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={styles.loadingText}>Chargement des types de tickets...</Text>
       </View>
     );
@@ -575,40 +383,93 @@ useEffect(() => {
           }
         ]}
       >
-        <EventCard event={event} tier={selectedTier} theme={theme} />
+        <View style={{ marginBottom: 6}}>
+          <SelectedSeatsBill seats={seat} />
+        </View>
 
         {step === 1 && (
-          <TierSelectionStep
-            priceTiers={priceTiers}
-            selectedTier={selectedTier}
-            onTierSelect={setSelectedTier}
-            onNext={proceedToNextStep}
-            theme={theme}
-          />
-        )}
+          <>
+            <TaxiStep 
+              taxiOption={taxiOption} 
+              setTaxiOption={setTaxiOption}  
+              theme={theme}
+            />
+    
+            <View style={styles.pricePreview}>
+              <View style={styles.priceRow}>
+                <Text style={styles.priceLabel}>Total tickets:</Text>
+                <Text style={styles.priceValue}>{price} MGA</Text>
+              </View>
+              {taxiOption.price > 0 && (
+                <View style={styles.priceRow}>
+                  <Text style={styles.priceLabel}>Taxi:</Text>
+                  <Text style={styles.priceValue}>+ {taxiOption.price} MGA</Text>
+                </View>
+              )}
+              <View style={[styles.priceRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total à payer:</Text>
+                <Text style={styles.totalValue}>{price + taxiOption.price} MGA</Text>
+              </View>
+            </View>
 
-        {step === 2 && selectedTier && (
-          <QuantitySelectionStep
-            selectedTier={selectedTier}
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            onNext={proceedToNextStep}
-            onBack={goBackToPreviousStep}
-            theme={theme}
-          />
-        )}
+            <Button 
+              mode="contained" 
+              onPress={proceedToNextStep}
+              style={styles.nextButton}
+              contentStyle={styles.nextButtonContent}
+              disabled={!selectedTier}
+              icon="arrow-right"
+            >
+              Suivant
+            </Button>
+          </>
+        )}       
 
-        {step === 3 && selectedTier && (
-          <ConfirmationStep
-            event={event}
-            selectedTier={selectedTier}
-            quantity={quantity}
-            loading={loading}
-            onConfirmPurchase={handleConfirmPurchase}
-            onBack={goBackToPreviousStep}
-            theme={theme}
-          />
+        {step === 2 && (
+          <View style={styles.stepContainer}>
+            <View style={styles.confirmationSection}>
+              <View style={styles.orderDetails}>
+                
+                {taxiOption.price > 0 && (
+                  <View style={styles.orderRow}>
+                    <Text style={styles.orderLabel}>Taxi:</Text>
+                    <Text style={styles.orderValue}>{taxiOption.label} - {taxiOption.price} MGA</Text>
+                  </View>
+                )}
           
+                <Divider style={styles.orderDivider} />
+          
+                <View style={[styles.orderRow, styles.totalRow]}>
+                  <Text style={styles.totalLabel}>Total à payer:</Text>
+                  <Text style={styles.totalValue}>
+                    {price + taxiOption.price} MGA
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.buttonContainer}>
+              <Button 
+                mode="outlined" 
+                onPress={goBackToPreviousStep}
+                style={styles.backButtonStep}
+                icon="arrow-left"
+              >
+                Précédent
+              </Button>
+      
+              <Button 
+                mode="contained" 
+                onPress={handleConfirmPurchase}
+                loading={loading}
+                disabled={loading || !selectedTier}
+                style={styles.confirmButton}
+                icon="check"
+              >
+                Confirmer l'achat
+              </Button>
+            </View>
+          </View>
         )}
       </Animated.View>
     </ScrollView>
@@ -661,7 +522,7 @@ const styles = StyleSheet.create({
   },
   step: {
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 1,
   },
   stepActive: {
     // Active state styles
@@ -683,9 +544,9 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   stepLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   stepLabelActive: {
     color: '#2196F3',
@@ -823,6 +684,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 8,
     width: '100%',
+    marginTop: 20,
   },
   nextButtonContent: {
     paddingVertical: 8,
@@ -878,6 +740,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
     marginBottom: 30,
+    marginTop: 16,
   },
   priceRow: {
     flexDirection: 'row',
@@ -901,6 +764,7 @@ const styles = StyleSheet.create({
   },
   backButtonStep: {
     flex: 1,
+    marginRight: 8,
   },
   confirmationHeader: {
     alignItems: 'center',
@@ -959,9 +823,60 @@ const styles = StyleSheet.create({
   confirmButton: {
     flex: 2,
     borderRadius: 12,
+    marginLeft: 8,
   },
   confirmButtonContent: {
     paddingVertical: 6,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginTop: 20,
+    gap: 12,
+  },
+  confirmationSection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  tierSummaryCard: {
+    marginBottom: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    elevation: 2,
+  },
+  tierSummaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  availabilityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  availabilityText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  tierDivider: {
+    marginVertical: 12,
+  },
+  tierSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  tierSummaryLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  tierSummaryValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2c3e50',
   },
 });
 

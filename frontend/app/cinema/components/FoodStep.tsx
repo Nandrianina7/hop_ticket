@@ -35,27 +35,94 @@ interface RestaurantItemCategory {
   category_name: string;
 }
 
+const MOCK_CATEGORIES: RestaurantItemCategory[] = [
+  { id: 1, category_name: "Popcorn" },
+  { id: 2, category_name: "Boissons" },
+  { id: 3, category_name: "Snacks" }
+];
+
+const MOCK_MENU_ITEMS: RestaurantItem[] = [
+  {
+    id: 1,
+    name: "Popcorn Moyen",
+    description: "Popcorn croustillant taille moyenne",
+    category: "popcorn",
+    category_name: "Popcorn",
+    price: 8000,
+    image: null,
+    is_available: true,
+    stock: 20
+  },
+  {
+    id: 2,
+    name: "Popcorn Grand",
+    description: "Grand popcorn pour partager",
+    category: "popcorn",
+    category_name: "Popcorn",
+    price: 12000,
+    image: null,
+    is_available: true,
+    stock: 15
+  },
+  {
+    id: 3,
+    name: "Coca Cola",
+    description: "Boisson gazeuse fraîche",
+    category: "drink",
+    category_name: "Boissons",
+    price: 5000,
+    image: null,
+    is_available: true,
+    stock: 30
+  },
+  {
+    id: 4,
+    name: "Fanta",
+    description: "Boisson orange rafraîchissante",
+    category: "drink",
+    category_name: "Boissons",
+    price: 5000,
+    image: null,
+    is_available: true,
+    stock: 25
+  },
+  {
+    id: 5,
+    name: "Hot Dog",
+    description: "Hot dog avec sauce spéciale",
+    category: "snack",
+    category_name: "Snacks",
+    price: 10000,
+    image: null,
+    is_available: true,
+    stock: 10
+  }
+];
+
 const FoodStep: React.FC<FoodStepProps> = ({ foodItems, setFoodItems, theme }) => {
   const [menuItems, setMenuItems] = useState<RestaurantItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuItemsCategory, setMenuItemsCategory] = useState<RestaurantItemCategory[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fetchConcenssionCategories = async () => {
-      try {
-      
-        const response = await axios.get(`${process.env.EXPO_PUBLIC_API_BACK_URL}/cinema/restaurantitem/categories/`);
+    try {
+      const response = await axios.get(
+        `${process.env.EXPO_PUBLIC_API_BACK_URL}/cinema/restaurantitem/categories/`
+      );
 
-        if (!response.data) {
-          console.log('Server not responding');
-          return;
-        }
-  
-        console.log('Categories fetched successfully:', response.data);
-        setMenuItemsCategory(response.data.data || []);
-      } catch (error) {
-        console.log('Failed to load categories from server', error);
+      if (!response.data || response.data.data.length === 0) {
+        console.log("Using MOCK categories");
+        setMenuItemsCategory(MOCK_CATEGORIES);
+        return;
       }
-    };
+
+      setMenuItemsCategory(response.data.data);
+
+    } catch (error) {
+      console.log("Server error, using MOCK categories");
+      setMenuItemsCategory(MOCK_CATEGORIES);
+    }
+  };
 
   useEffect(() => {
     fetchRestaurantItems();
@@ -79,10 +146,21 @@ const getCategoryLabel = (categoryName: string) => {
       setLoading(true);
       const response = await axiosInstance.get('/cinema/restaurant-items/');
       console.log('Restaurant items from API:', response.data);
-      setMenuItems(response.data);
+
+      if (!response.data || response.data.length === 0) {
+        console.log("Using MOCK restaurant items");
+        setMenuItems(MOCK_MENU_ITEMS);
+      } else {
+        setMenuItems(response.data);
+      }
+
     } catch (err: any) {
       console.error('Error fetching restaurant items:', err);
-      setError('Erreur lors du chargement du menu');
+
+    // fallback to mock
+      console.log("API failed, using MOCK restaurant items");
+      setMenuItems(MOCK_MENU_ITEMS);
+
     } finally {
       setLoading(false);
     }

@@ -327,3 +327,33 @@ class VenuePlanListSerializer(serializers.ModelSerializer):
     
     def get_element_count(self, obj):
         return len(obj.elements) if obj.elements else 0
+
+
+
+class FoodItemCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.FoodItem
+        fields = [
+            "id",
+            "name",
+            "description",
+            "category",
+            "price",
+            "image",
+            "stock",
+            "is_available",
+            "created_by",
+        ]
+        read_only_fields = ["id", "is_available"]
+
+    def validate_stock(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Stock cannot be negative.")
+        return value
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        validated_data["is_available"] = validated_data.get("stock", 0) > 0
+        validated_data["created_by"] = request.user
+        return super().create(validated_data)

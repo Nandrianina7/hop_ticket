@@ -2,17 +2,26 @@ import { Box, Paper, Button, Pagination } from '@mui/material';
 import ConcenssionForm from '../../components/Home/Concenssion/ConcessionForm';
 import ConcessionCard from '../../components/Home/Concenssion/ConcenssionCard';
 import api from '../../api/api';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const ConcenssionPage = () => {
+
+const EventFoods = () => {
   const [concenssionList, setConcenssionList] = useState([]);
   const [count, setCount] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const CATEGORY = [
+    { id: 1, category_name: 'POPCORN' },
+    { id: 2, category_name: 'DRINKS' },
+    { id: 3, category_name: 'CANDIES' },
+    { id: 4, category_name: 'SNACKS' },
+    { id: 5, category_name: 'COMBO' },
+  ];
 
+  const concenssionCategories = CATEGORY;
   const fetchConcenssion = async (page = 1) => {
     try {
-      const response = await api.get(`/cinema/organizer/get_concenssion/?page=${page}`, {
+      const response = await api.get(`/api/event/food/?page=${page}`, {
         withCredentials: true,
       });
 
@@ -36,7 +45,7 @@ const ConcenssionPage = () => {
 
   const onSendData = async (formData) => {
     try {
-      const response = await api.post('/cinema/organizer/concenssion/', formData, {
+      const response = await api.post('/api/event/food/', formData, {
         withCredentials: true,
       });
 
@@ -89,32 +98,12 @@ const ConcenssionPage = () => {
     }
   };
 
+  const totalPages = Math.ceil(count / pageSize);
   useEffect(() => {
     fetchConcenssion();
     // fetchConcenssionCategories();
   }, []);
-    const [concenssionCategories, setConcenssionCategories] = useState([]);
-    const fetchConcenssionCategories = async () => {
-      try {
-        const response = await api.get('/cinema/restaurantitem/categories/');
-  
-        if (!response.data) {
-          console.log('Server not responding');
-          return;
-        }
-  
-        console.log('Categories fetched successfully:', response.data);
-        setConcenssionCategories(response.data.data || []);
-      } catch (error) {
-        console.log('Failed to load categories from server', error);
-      }
-    };
-  
-    useEffect(() => {
-      // fetchConcenssion();
-      fetchConcenssionCategories();
-    }, []);
-  const totalPages = Math.ceil(count / pageSize);
+
 
   return (
     <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -128,7 +117,11 @@ const ConcenssionPage = () => {
             p: 3,
           }}
         >
-          <ConcenssionForm onSave={onSendData} concenssionCategories={concenssionCategories} />
+          <ConcenssionForm 
+            onSave={onSendData} 
+            concenssionCategories={concenssionCategories} 
+            type='event'
+          />
         </Paper>
 
         <Paper sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
@@ -154,4 +147,4 @@ const ConcenssionPage = () => {
   );
 };
 
-export default ConcenssionPage;
+export default EventFoods;

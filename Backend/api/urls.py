@@ -50,7 +50,9 @@ urlpatterns = [
   path('delete_venue/<int:pk>/', VenuePlanDeleteView.as_view(), name='venue_plan'),
   path('venue_plan_update/<int:pk>/', VenuePlanUpdateView.as_view(), name='venue-plan-update'),
   path('organizer_event/<int:creator>/', views.OrganizerEventsView.as_view(), name='organizer_event'),
+  path('event/food/', views.FoodItemListCreateView.as_view(), name='foods'),
 
+  
     # mobile app urls
   path('mobile/new/event_plan/',views.EventPlanNewInsertionCustomer.as_view(),name='new_event_plan'),
   path('mobile/event/likes',views.MobileEventLikes.as_view(),name='event-likes'),

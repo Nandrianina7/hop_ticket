@@ -14,11 +14,13 @@ import {
   ChevronLeft,
   LivingOutlined,
   History,
+  FoodBank,
 } from '@mui/icons-material';
 import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
 import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 import { Sidebar as ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import Signout from './Signout';
+import { icon } from 'leaflet';
 // import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
 
 const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
@@ -58,6 +60,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
     { icon: <Event />, path: '/event', text: 'Evenements' },
     { icon: <People />, path: '/constumers', text: 'Clients' },
     { icon: <LivingOutlined />, path: '/plan', text: 'plan de salle' },
+    { icon: <FoodBank />, path: '/event/food', text: 'Restaurations' },
   ];
 
   useEffect(() => {

@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import api from '../../../api/api';
 import { getImagePath } from '../../../utils/getImagePath';
 
-const ConcenssionForm = ({ onSave, initialData }) => {
+const ConcenssionForm = ({ onSave, initialData, concenssionCategories, type='cinema' }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -28,28 +28,6 @@ const ConcenssionForm = ({ onSave, initialData }) => {
     imagePreview: '',
     quantity: '',
   });
-
-  const [concenssionCategories, setConcenssionCategories] = useState([]);
-  const fetchConcenssionCategories = async () => {
-    try {
-      const response = await api.get('/cinema/restaurantitem/categories/');
-
-      if (!response.data) {
-        console.log('Server not responding');
-        return;
-      }
-
-      console.log('Categories fetched successfully:', response.data);
-      setConcenssionCategories(response.data.data || []);
-    } catch (error) {
-      console.log('Failed to load categories from server', error);
-    }
-  };
-
-  useEffect(() => {
-    // fetchConcenssion();
-    fetchConcenssionCategories();
-  }, []);
 
   useEffect(() => {
     if (open && initialData) {
@@ -179,8 +157,13 @@ const ConcenssionForm = ({ onSave, initialData }) => {
               name="category"
               label="Categorie"
             >
-              {concenssionCategories.map((item) => (
+              {type==='cinema' && concenssionCategories.map((item) => (
                 <MenuItem key={item.id} value={item.id}>
+                  {item.category_name}
+                </MenuItem>
+              ))}
+              {type==='event' && concenssionCategories.map((item) => (
+                <MenuItem key={item.id} value={item.category_name}>
                   {item.category_name}
                 </MenuItem>
               ))}
