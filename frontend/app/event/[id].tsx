@@ -361,27 +361,10 @@ const handleSelectionChange = useCallback((ids: string[]) => {
   // Buy per selected seat in this category
   const seatsInCategory = selection.filter(s => s.categoryName === categoryName);
   for (const seat of seatsInCategory) {
-    await buyTicket(eventIdNum!, tier.id, String(seat.id)); // pass seat id
     sum += 1;
   }
 }
-
-       Alert.alert(
-              'Succès',
-              `${sum} ticket(s) acheté(s) avec succès!`,
-              [
-                {
-                  text: 'Voir mes tickets',
-                  onPress: () => router.replace('/event/myticket_events'),
-                },
-                {
-                  text: 'Continuer',
-                  onPress: () => router.back(),
-                },
-              ]
-            );
-
-      // console.log(counts);
+      handleSelectTicketType(sum)
     };
  
 
@@ -479,13 +462,21 @@ const handleSelectionChange = useCallback((ids: string[]) => {
     loadPriceTiers();
   }, [id]);
   
-  const handleSelectTicketType = () => {
+  const handleSelectTicketType = (totalTicket: number) => {
+     const totalPrice = selection.reduce(
+      (sum, seat) => sum + Number(seat.price ?? 0),
+      0
+    );
     if (venuePlans.length > 0) {
       router.push({
         pathname: '/event/confirm-purchase',
         params: {
           event: JSON.stringify(event),
-          venuePlans: JSON.stringify(venuePlans)
+          venuePlans: JSON.stringify(venuePlans),
+          total: totalTicket,
+          seats: JSON.stringify(selection),
+          price: String(totalPrice)
+
         }
       });
     } else {

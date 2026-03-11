@@ -6,7 +6,7 @@ import DeleteDialog from '../../../ui/DeleteDialog';
 import ConcenssionForm from './ConcessionForm';
 import ConcessionAddQty from './ConcessionAddqty';
 import api from '../../../api/api';
-const ConcessionCard = ({ concessionList = [], onDelete, onUpdate }) => {
+const ConcessionCard = ({ concessionList = [], onDelete, onUpdate, concenssionCategories}) => {
   const theme = useTheme();
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -56,7 +56,7 @@ const ConcessionCard = ({ concessionList = [], onDelete, onUpdate }) => {
               <Typography variant="h6">{item.name}</Typography>
               <Typography variant="subtitle1">Prix: {item.price} MGA</Typography>
               <Typography variant="subtitle2" color="text.secondary">
-                Categorie: {item.category_name}
+                Categorie: {item.category_name || item.category}
               </Typography>
               <Typography variant="subtitle2" color="text.secondary">
                 {item.description}
@@ -78,7 +78,7 @@ const ConcessionCard = ({ concessionList = [], onDelete, onUpdate }) => {
                 >
                   <DeleteOutlineTwoTone />
                 </IconButton>
-                <ConcenssionForm onSave={onUpdate} initialData={item} />
+                <ConcenssionForm onSave={onUpdate} initialData={item} concenssionCategories={concenssionCategories} />
                 <ConcessionAddQty
                   item={item}
                   onSave={async ({ id, quantity }) => {

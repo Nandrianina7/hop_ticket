@@ -89,7 +89,7 @@ const SelectedSeatsBill: React.FC<Props> = ({
                       {(s.label ?? '')}
                       {s.row !== undefined ? `-${s.row}` : ''}
                       {s.number !== undefined ? `- ${s.number}` : ''}
-                      {s.tier ? ` ${s.tier}` : ''} - {nf.format(toNumber(s.price))}
+                      
                     </Text>
                     <Text style={styles.muted}>{nf.format(toNumber(s.price))}</Text>
                   </View>

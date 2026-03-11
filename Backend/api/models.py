@@ -267,3 +267,51 @@ class ViewEventLocation(models.Model):
         verbose_name = 'Event Location (view)'
         verbose_name_plural = 'Event Locations (view)'
         ordering = ['-date']
+        
+class FoodItem(models.Model):
+    CATEGORY_CHOICES = [
+        ('POPCORN', 'Popcorn'),
+        ('DRINKS', 'Boissons'),
+        ('CANDIES', 'Bonbons'),
+        ('SNACKS', 'Snacks'),
+        ('COMBO', 'Menus combo'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default=None)    
+    price = models.DecimalField(max_digits=9, decimal_places=2)
+    image = models.ImageField(upload_to='restaurant_items/', null=True, blank=True)
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    stock = models.IntegerField(default=0)
+    created_by = models.ForeignKey(
+        'accounts.Admin', 
+        default=1, 
+        on_delete=models.CASCADE, 
+        related_name='food_items'
+    )
+    class Meta:
+        ordering = ['category', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_category_display()}) - {self.price}MGA"
+
+    def reduce_stock(self, quantity):
+        """Réduire le stock après achat"""
+        if self.stock >= quantity:
+            self.stock -= quantity
+            if self.stock == 0:
+                self.is_available = False
+            self.save()
+            return True
+        return False
+
+    def addition_stock(self, quantity):
+        """Ajouter au stock"""
+        self.stock += quantity
+        self.is_available = True
+        self.save()
+        return True     
+            

@@ -19,7 +19,18 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import Event, EventPlan, EventSite, FCMToken, Ticket, PriceTier, EventRating, VenuePlan, ViewEventLocation
+from .models import (
+   Event, 
+   EventPlan, 
+   EventSite, 
+   FCMToken, 
+   Ticket, 
+   PriceTier, 
+   EventRating, 
+   VenuePlan, 
+   ViewEventLocation, 
+   FoodItem
+)
 from .security import generate_secure_qr_data 
 from .serializers import (
    EVentLocationSerializer, 
@@ -35,7 +46,8 @@ from .serializers import (
    VenuePlanSerializer, 
    VenuePlanSerializer, 
    PriceSerializer, 
-   ViewEventLocationSerializer
+   ViewEventLocationSerializer,
+   FoodItemCreateSerializer,
 )
 from django.utils import timezone
 from rest_framework.generics import RetrieveAPIView
@@ -809,6 +821,40 @@ class VenuePlanUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from rest_framework.pagination import PageNumberPagination
+class FoodPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class FoodItemListCreateView(APIView):
+
+    def get(self, request):
+        foods = FoodItem.objects.all().order_by("-id")
+
+        paginator = FoodPagination()
+        result_page = paginator.paginate_queryset(foods, request)
+
+        serializer = FoodItemCreateSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        serializer = FoodItemCreateSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            print(serializer.data)
+            return Response(serializer.data, status=201)
+        print(serializer.errors)
+        return Response(serializer.errors, status=400)
+
+
+
 # mobile
 class EventListView(APIView):
     authentication_classes = [UUIDAuthentication]
@@ -882,17 +928,6 @@ class MyTicketsAPIView(APIView):
         serializer = TicketSerializer(tickets, many=True, context={'request': request})
         return Response(serializer.data)
 
-# class ReservedTicketsAPIView(APIView):
-#     authentication_classes = [UUIDAuthentication]
-#     permission_classes     = [IsCustomerAuthenticated]
-
-#     def get(self, request):
-#         # Filtrer seulement les tickets réservés (is_used=False)
-#         tickets    = Ticket.objects.filter(customer=request.user, is_used=False)
-#         serializer = TicketSerializer(tickets, many=True, context={'request': request})
-#         return Response(serializer.data)
-
-# Dans views.py
 
 class MobileSeatIdsByEventAPIView(APIView):
     authentication_classes = [UUIDAuthentication]
@@ -936,8 +971,8 @@ class EventPlanNewInsertionCustomer(APIView):
 class BuyTicketView(APIView):
     """
     Achète un ou plusieurs tickets pour un event / tier donné.
-    Bloque l'achat si tickets_sold >= capacité initiale (tickets vendus = total des places).
-    Supporte maintenant l'achat de plusieurs tickets en une seule transaction.
+    Supporte l'achat de plusieurs sièges différents en une seule transaction.
+    Bloque l'achat si tickets_sold >= capacité initiale ou si siège déjà réservé.
     """
     authentication_classes = [UUIDAuthentication]
     permission_classes = [IsCustomerAuthenticated]
@@ -958,10 +993,10 @@ class BuyTicketView(APIView):
 
         try:
             with transaction.atomic():
-                # lock event et tier pour éviter double-vente
+                # Lock event
                 event = Event.objects.select_for_update().get(id=event_id)
-                
-                # calcul des places restantes actuellement
+
+                # Lock all tiers to calculate remaining tickets safely
                 total_remaining = (
                     PriceTier.objects
                     .select_for_update()
@@ -969,10 +1004,8 @@ class BuyTicketView(APIView):
                     .aggregate(total=Sum('available_quantity'))['total'] or 0
                 )
 
-                # capacité initiale = vendus + restant
                 initial_capacity = (event.tickets_sold or 0) + (total_remaining or 0)
 
-                # si le nombre de vendus atteint la capacité initiale -> sold out
                 if (event.tickets_sold or 0) >= initial_capacity:
                     return Response(
                         {"detail": "Événement sold out (capacité atteinte)."},
@@ -982,7 +1015,6 @@ class BuyTicketView(APIView):
                 # récupère et lock le tier spécifique
                 tier = PriceTier.objects.select_for_update().get(id=tier_id, event=event)
 
-                # vérifie la disponibilité du tier choisi
                 if tier.available_quantity < quantity:
                     return Response(
                         {"detail": f"Stock insuffisant. Seulement {tier.available_quantity} tickets disponibles pour ce type."},
@@ -998,14 +1030,14 @@ class BuyTicketView(APIView):
                 )
                 next_ticket_number = 1 if not last_ticket else last_ticket.ticket_number + 1
 
-                # décrémente la quantité du tier et incrémente tickets_sold
+                # Decrement tier quantity and increment sold tickets
                 tier.available_quantity = F('available_quantity') - quantity
                 tier.save(update_fields=['available_quantity'])
 
                 event.tickets_sold = F('tickets_sold') + quantity
                 event.save(update_fields=['tickets_sold'])
 
-                # création des tickets
+                # Create tickets
                 tickets = []
                 for i in range(quantity):
                     ticket = Ticket.objects.create(
@@ -1017,11 +1049,10 @@ class BuyTicketView(APIView):
                     )
                     tickets.append(ticket)
 
-                # refresh pour obtenir les valeurs réelles de la BD
+                # Refresh DB values
                 tier.refresh_from_db()
                 event.refresh_from_db()
 
-                # recalculer total_remaining après la décrémentation pour renvoyer l'état exact
                 total_remaining_after = (
                     PriceTier.objects.filter(event=event).aggregate(total=Sum('available_quantity'))['total'] or 0
                 )
@@ -1048,8 +1079,6 @@ class BuyTicketView(APIView):
             return Response({"detail": "Erreur de concurrence, réessayez."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    
 
 class PreviewTicketView(APIView):
     """
