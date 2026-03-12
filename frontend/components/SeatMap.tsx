@@ -1,12 +1,12 @@
-
 // SeatingMap.tsx
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
   Pressable,
+  Text,
 } from "react-native";
-import Svg, { Circle, G, Rect } from "react-native-svg";
+import Svg, { G } from "react-native-svg";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -99,25 +99,12 @@ const SeatingMap: React.FC<Props> = ({
       ),
     [rawLayout, containerWidth, containerHeight, padding]
   );
-  // 🎯 Recentre le plan
-    const resetView = () => {
-      scale.value = withTiming(1);
-      translateX.value = withTiming(0);
-      translateY.value = withTiming(0);
-    };
 
-    // ➕ Zoom +
-    const zoomIn = () => {
-      scale.value = withTiming(Math.min(scale.value * 1.25, 20));
-    };
+  // Zoom level indicator
+  const [zoomLevel, setZoomLevel] = useState(1);
 
-    // ➖ Zoom -
-    const zoomOut = () => {
-      scale.value = withTiming(Math.max(scale.value / 1.25, 0.5));
-    };
-   
   /* ===========================
-     TRANSFORM (ZOOM / PAN)
+     TRANSFORM (ZOOM & PAN)
   =========================== */
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
@@ -125,6 +112,38 @@ const SeatingMap: React.FC<Props> = ({
   const translateY = useSharedValue(0);
   const lastX = useSharedValue(0);
   const lastY = useSharedValue(0);
+
+  // Update zoom level for indicator
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setZoomLevel(Math.round(scale.value * 100) / 100);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ===========================
+     ZOOM & PAN CONTROLS
+  =========================== */
+  const resetView = () => {
+    scale.value = withTiming(1, { duration: 300 });
+    translateX.value = withTiming(0, { duration: 300 });
+    translateY.value = withTiming(0, { duration: 300 });
+  };
+
+  const zoomIn = () => {
+    scale.value = withTiming(Math.min(scale.value * 1.25, 20), { duration: 200 });
+  };
+
+  const zoomOut = () => {
+    scale.value = withTiming(Math.max(scale.value / 1.25, 0.5), { duration: 200 });
+  };
+
+  // Movement controls
+  const moveStep = 50;
+  const moveUp = () => translateY.value = withTiming(translateY.value + moveStep, { duration: 200 });
+  const moveDown = () => translateY.value = withTiming(translateY.value - moveStep, { duration: 200 });
+  const moveLeft = () => translateX.value = withTiming(translateX.value + moveStep, { duration: 200 });
+  const moveRight = () => translateX.value = withTiming(translateX.value - moveStep, { duration: 200 });
 
   /* ===========================
      SELECTION STATE
@@ -154,23 +173,22 @@ const SeatingMap: React.FC<Props> = ({
     []
   );
 
-const seatState = useCallback(
-  (id: string): SeatState => {
-    // First check if the seat is disabled in the layout
-    const seat = normalized.sections
-      .flatMap(s => s.seats)
-      .find(s => s.id === id);
-    
-    if (seat?.disabled) return "disabled";
-    if (reservedSeatIds.includes(id)) return "reserved";
-    if (selectedSet.has(id)) return "selected";
-    return "available";
-  },
-  [reservedSeatIds, selectedSet, normalized.sections]
-);
+  const seatState = useCallback(
+    (id: string): SeatState => {
+      const seat = normalized.sections
+        .flatMap(s => s.seats)
+        .find(s => s.id === id);
+      
+      if (seat?.disabled) return "disabled";
+      if (reservedSeatIds.includes(id)) return "reserved";
+      if (selectedSet.has(id)) return "selected";
+      return "available";
+    },
+    [reservedSeatIds, selectedSet, normalized.sections]
+  );
 
   /* ===========================
-     GESTURES (PAN / PINCH)
+     GESTURES (PINCH & PAN)
   =========================== */
   const pinch = Gesture.Pinch()
     .onStart(() => {
@@ -213,34 +231,18 @@ const seatState = useCallback(
       containerHeight / sec.height
     );
 
-    scale.value = withTiming(targetScale);
+    scale.value = withTiming(targetScale, { duration: 400 });
     translateX.value = withTiming(
-      -sec.x * targetScale + containerWidth / 2 - (sec.width * targetScale) / 2
+      -sec.x * targetScale + containerWidth / 2 - (sec.width * targetScale) / 2,
+      { duration: 400 }
     );
     translateY.value = withTiming(
-      -sec.y * targetScale + containerHeight / 2 - (sec.height * targetScale) / 2
+      -sec.y * targetScale + containerHeight / 2 - (sec.height * targetScale) / 2,
+      { duration: 400 }
     );
 
     onSectionPress?.(sec);
   };
-  // ===========================
-  // BOUTONS GUIDE (déplacement du plan)
-  // ===========================
-  const moveStep = 50; // px par clic
-
-  const moveUp = () => {
-    translateY.value = withTiming(translateY.value + moveStep);
-  };
-  const moveDown = () => {
-    translateY.value = withTiming(translateY.value - moveStep);
-  };
-  const moveLeft = () => {
-    translateX.value = withTiming(translateX.value + moveStep);
-  };
-  const moveRight = () => {
-    translateX.value = withTiming(translateX.value - moveStep);
-  };
-
 
   /* ===========================
      RENDER
@@ -254,108 +256,107 @@ const seatState = useCallback(
     >
       <GestureDetector gesture={composed}>
         <Animated.View style={animatedStyle}>
-          {/* ===== SVG (VISUEL SEULEMENT) ===== */}
           <Svg width={containerWidth} height={containerHeight}>
-  {normalized.sections.map((sec) => (
-    <G key={sec.id}>
-      <SectionItem
-        section={sec}
-        scaledX={sec.x}
-        scaledY={sec.y}
-        scaledW={sec.width}
-        scaledH={sec.height}
-        onPress={() => snapToSection(sec)}
-      />
+            {normalized.sections.map((sec) => (
+              <G key={sec.id}>
+                <SectionItem
+                  section={sec}
+                  scaledX={sec.x}
+                  scaledY={sec.y}
+                  scaledW={sec.width}
+                  scaledH={sec.height}
+                  onPress={() => snapToSection(sec)}
+                />
 
-      {/* Filter out disabled seats when rendering SeatItems */}
-      {sec.seats
-        .filter(seat => !seat.disabled) // Only render non-disabled seats
-        .map((seat) => (
-          <SeatItem
-            key={seat.id}
-            cx={sec.x + seat.x}
-            cy={sec.y + seat.y}
-            r={seat.seatSize}
-            state={seatState(seat.id)}
-          />
-        ))}
-    </G>
-  ))}
-</Svg>
+                {sec.seats
+                  .filter(seat => !seat.disabled)
+                  .map((seat) => (
+                    <SeatItem
+                      key={seat.id}
+                      cx={sec.x + seat.x}
+                      cy={sec.y + seat.y}
+                      r={seat.seatSize}
+                      state={seatState(seat.id)}
+                    />
+                  ))}
+              </G>
+            ))}
+          </Svg>
 
-{/* ===== OVERLAY TACTILE (LA CLÉ 🔥) ===== */}
-<View
-  style={StyleSheet.absoluteFill}
-  pointerEvents="box-none"
->
-  {normalized.sections.flatMap((sec) =>
-    sec.seats
-      .filter(seat => !seat.disabled) // Don't create pressable for disabled seats
-      .map((seat) => {
-        const cx = sec.x + seat.x;
-        const cy = sec.y + seat.y;
-        const r = seat.seatSize * 2;
-        const isReserved = reservedSeatIds.includes(seat.id);
+          <View
+            style={StyleSheet.absoluteFill}
+            pointerEvents="box-none"
+          >
+            {normalized.sections.flatMap((sec) =>
+              sec.seats
+                .filter(seat => !seat.disabled)
+                .map((seat) => {
+                  const cx = sec.x + seat.x;
+                  const cy = sec.y + seat.y;
+                  const r = seat.seatSize * 2;
+                  const isReserved = reservedSeatIds.includes(seat.id);
 
-        return (
-          <Pressable
-            key={`sec-${sec.id}-seat-${seat.id}`}
-            style={{
-              position: "absolute",
-              left: cx - r,
-              top: cy - r,
-              width: r * 2,
-              height: r * 2,
-              borderRadius: r,
-            }}
-            disabled={isReserved}
-            onPress={() => {
-              toggleSeat(seat.id);
-              onSeatPress?.(seat);
-            }}
-          />
-        );
-      })
-  )}
-</View>
+                  return (
+                    <Pressable
+                      key={`sec-${sec.id}-seat-${seat.id}`}
+                      style={{
+                        position: "absolute",
+                        left: cx - r,
+                        top: cy - r,
+                        width: r * 2,
+                        height: r * 2,
+                        borderRadius: r,
+                      }}
+                      disabled={isReserved}
+                      onPress={() => {
+                        toggleSeat(seat.id);
+                        onSeatPress?.(seat);
+                      }}
+                    />
+                  );
+                })
+            )}
+          </View>
         </Animated.View>
       </GestureDetector>
-      {/* ===== CONTROLES ZOOM ===== */}
-      <View style={styles.controls}>
-        <Pressable style={styles.controlBtn} onPress={zoomIn}>
-          <Animated.Text style={styles.controlText}>＋</Animated.Text>
-        </Pressable>
-
-        <Pressable style={styles.controlBtn} onPress={zoomOut}>
-          <Animated.Text style={styles.controlText}>－</Animated.Text>
-        </Pressable>
-
-        <Pressable style={styles.controlBtn} onPress={resetView}>
-          <Animated.Text style={styles.controlText}>🎯</Animated.Text>
-        </Pressable>
-      </View>
-      {/* Bouton <><> */}
-      <View style={styles.guideControls}>
-        <Pressable style={styles.guideBtn} onPress={moveUp}>
-          <Animated.Text style={styles.guideText}>⬆️</Animated.Text>
-        </Pressable>
-
-        <View style={{ flexDirection: "row" }}>
-          <Pressable style={styles.guideBtn} onPress={moveLeft}>
-            <Animated.Text style={styles.guideText}>⬅️</Animated.Text>
+      {/* COMPACT BOTTOM CONTROLS */}
+      <View style={styles.compactControls}>
+        <View style={styles.compactZoomButtons}>
+          <Pressable style={styles.compactButton} onPress={zoomOut}>
+            <Text style={styles.compactButtonText}>−</Text>
           </Pressable>
-
-          <Pressable style={styles.guideBtn} onPress={moveRight}>
-            <Animated.Text style={styles.guideText}>➡️</Animated.Text>
+          <Pressable style={styles.compactButton} onPress={resetView}>
+            <Text style={styles.compactButtonText}>⟲</Text>
+          </Pressable>
+          <Pressable style={styles.compactButton} onPress={zoomIn}>
+            <Text style={styles.compactButtonText}>+</Text>
           </Pressable>
         </View>
 
-        <Pressable style={styles.guideBtn} onPress={moveDown}>
-          <Animated.Text style={styles.guideText}>⬇️</Animated.Text>
-        </Pressable>
+        {/* Divider */}
+        <View style={styles.compactDivider} />
+
+        {/* Drag Section - All in one row as requested */}
+        <View style={styles.dragRow}>
+          <Pressable style={styles.dragButton} onPress={moveLeft}>
+            <Text style={styles.dragButtonText}>←</Text>
+          </Pressable>
+          <Pressable style={styles.dragButton} onPress={moveRight}>
+            <Text style={styles.dragButtonText}>→</Text>
+          </Pressable>
+          <Pressable style={styles.dragButton} onPress={moveUp}>
+            <Text style={styles.dragButtonText}>↑</Text>
+          </Pressable>
+          <Pressable style={styles.dragButton} onPress={moveDown}>
+            <Text style={styles.dragButtonText}>↓</Text>
+          </Pressable>
+        </View>
       </View>
 
-
+      {/* Mini Help Text */}
+      <View style={styles.miniHelp}>
+        <Text style={styles.miniHelpText}>Pinch • Drag</Text>
+      </View>
     </View>
   );
 };
@@ -364,55 +365,112 @@ export default SeatingMap;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f7fbff",
+    backgroundColor: "#f5f7fa",
     overflow: "hidden",
+    position: "relative",
   },
-  controls: {
-  position: "absolute",
-  right: 35,
-  bottom: 20,
-  alignItems: "center",
-},
+  compactControls: {
+    position: "absolute",
+    bottom: 16,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    backgroundColor: "rgba(30, 35, 48, 0.95)",
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 2,
+    paddingVertical: 8,
+    paddingHorizontal: 3,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-controlBtn: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  backgroundColor: "rgba(0,0,0,0.65)",
-  justifyContent: "center",
-  alignItems: "center",
-  marginVertical: 6,
-},
+  compactZoomLevel: {
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginRight: 6,
+  },
 
-controlText: {
-  color: "#fff",
-  fontSize: 20,
-  fontWeight: "bold",
-},
-guideControls: {
-  position: "absolute",
-  left: 0,
-  bottom: 22,
-  alignItems: "center",
-  justifyContent: "center",
-},
+  compactZoomText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
 
-guideBtn: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  backgroundColor: "rgba(0,0,0,0.65)",
-  justifyContent: "center",
-  alignItems: "center",
-  margin: 6,
-},
+  compactZoomButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-guideText: {
-  color: "#fff",
-  fontSize: 20,
-  fontWeight: "bold",
-},
+  compactButton: {
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    marginHorizontal: 2,
+  },
 
+  compactButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "400",
+  },
 
-   mapContainer: {},
+  compactDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    marginHorizontal: 6,
+  },
+
+  // Drag row with all four directions
+  dragRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  dragButton: {
+    width: 27,
+    height: 27,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    marginHorizontal: 1,
+  },
+
+  dragButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  // Mini help text
+  miniHelp: {
+    position: "absolute",
+    bottom: 70,
+    alignSelf: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 5,
+  },
+
+  miniHelpText: {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+  },
 });

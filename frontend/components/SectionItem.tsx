@@ -152,6 +152,96 @@ const SectionItem: React.FC<Props> = ({ section, scaledX, scaledY, scaledW, scal
             onPress={onPress}
           />
         );
+      case "trapezoid":
+        const trapezoidPoints = [
+          [scaledX + scaledW * 0.2, scaledY],
+          [scaledX + scaledW * 0.8, scaledY],
+          [scaledX + scaledW, scaledY + scaledH],
+          [scaledX, scaledY + scaledH],
+        ].map(p => p.join(",")).join(" ");
+
+        return (
+          <Polygon
+            points={trapezoidPoints}
+            fill={color}
+            opacity={opacity}
+            stroke={strokeColor}
+            strokeWidth={1.4}
+            onPress={onPress}
+          />
+        );
+      case "parallelogram":
+        const skew = scaledW * 0.25;
+
+        const parallelogramPoints = [
+          [scaledX + skew, scaledY],
+          [scaledX + scaledW, scaledY],
+          [scaledX + scaledW - skew, scaledY + scaledH],
+          [scaledX, scaledY + scaledH],
+        ].map(p => p.join(",")).join(" ");
+
+        return (
+          <Polygon
+            points={parallelogramPoints}
+            fill={color}
+            opacity={opacity}
+            stroke={strokeColor}
+            strokeWidth={1.4}
+            onPress={onPress}
+          />
+        );
+      case "octagon":
+        const octagonPoints = [];
+        const octSides = 8;
+        const octAngleStep = (Math.PI * 2) / octSides;
+        const octRadius = Math.min(scaledW, scaledH) / 2;
+
+        for (let i = 0; i < octSides; i++) {
+          const angle = i * octAngleStep - Math.PI / 2;
+          const px = centerX + octRadius * Math.cos(angle);
+          const py = centerY + octRadius * Math.sin(angle);
+          octagonPoints.push([px, py]);
+        }
+
+        const octagonPointsStr = octagonPoints.map(p => p.join(",")).join(" ");
+
+        return (
+          <Polygon
+            points={octagonPointsStr}
+            fill={color}
+            opacity={opacity}
+            stroke={strokeColor}
+            strokeWidth={1.4}
+            onPress={onPress}
+          />
+        );
+      case "cross":
+        const crossPath = `
+          M ${centerX - scaledW / 6} ${scaledY}
+          L ${centerX + scaledW / 6} ${scaledY}
+          L ${centerX + scaledW / 6} ${centerY - scaledH / 6}
+          L ${scaledX + scaledW} ${centerY - scaledH / 6}
+          L ${scaledX + scaledW} ${centerY + scaledH / 6}
+          L ${centerX + scaledW / 6} ${centerY + scaledH / 6}
+          L ${centerX + scaledW / 6} ${scaledY + scaledH}
+          L ${centerX - scaledW / 6} ${scaledY + scaledH}
+          L ${centerX - scaledW / 6} ${centerY + scaledH / 6}
+          L ${scaledX} ${centerY + scaledH / 6}
+          L ${scaledX} ${centerY - scaledH / 6}
+          L ${centerX - scaledW / 6} ${centerY - scaledH / 6}
+          Z
+        `;
+
+        return (
+          <Path
+            d={crossPath}
+            fill={color}
+            opacity={opacity}
+            stroke={strokeColor}
+            strokeWidth={1.4}
+            onPress={onPress}
+          />
+        );
 
       case "rectangle":
       default:

@@ -27,6 +27,10 @@ export const renderShape = (shapeType, props) => {
     ...rest
   } = props;
 
+  // Calculate center position
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+
   const commonProps = {
     id,
     fill,
@@ -42,34 +46,36 @@ export const renderShape = (shapeType, props) => {
     ...rest,
   };
 
-  // --- Deformable Polygon Renderer ---
-
   // --- Existing Shapes ---
   switch (shapeType) {
     case SHAPE_TYPES.RECTANGLE:
       return (
         <Rect
-          x={x}
-          y={y}
           width={width}
           height={height}
           cornerRadius={cornerRadius}
           {...commonProps}
+          offsetX={width / 2}
+          offsetY={height / 2}
+          x={centerX}
+          y={centerY}
         />
       );
+      
     case SHAPE_TYPES.DEFORMABLE_QUAD:
       return <DeformablePolygon {...props} />;
+      
     case SHAPE_TYPES.TRAPEZOID:
       return (
         <Shape
-          x={x}
-          y={y}
+          x={centerX}
+          y={centerY}
           sceneFunc={(ctx, shape) => {
             ctx.beginPath();
-            ctx.moveTo(width * 0.2, 0);
-            ctx.lineTo(width * 0.8, 0);
-            ctx.lineTo(width, height);
-            ctx.lineTo(0, height);
+            ctx.moveTo(-width/2 + width * 0.2, -height/2);
+            ctx.lineTo(-width/2 + width * 0.8, -height/2);
+            ctx.lineTo(width/2, height/2);
+            ctx.lineTo(-width/2, height/2);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}
@@ -80,14 +86,14 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.PARALLELOGRAM:
       return (
         <Shape
-          x={x}
-          y={y}
+          x={centerX}
+          y={centerY}
           sceneFunc={(ctx, shape) => {
             ctx.beginPath();
-            ctx.moveTo(width * 0.2, 0);
-            ctx.lineTo(width, 0);
-            ctx.lineTo(width * 0.8, height);
-            ctx.lineTo(0, height);
+            ctx.moveTo(-width/2 + width * 0.2, -height/2);
+            ctx.lineTo(width/2, -height/2);
+            ctx.lineTo(-width/2 + width * 0.8, height/2);
+            ctx.lineTo(-width/2, height/2);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}
@@ -98,8 +104,8 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.CIRCLE:
       return (
         <Circle
-          x={x + width / 2}
-          y={y + height / 2}
+          x={centerX}
+          y={centerY}
           radius={Math.min(width, height) / 2}
           {...commonProps}
         />
@@ -108,8 +114,8 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.TRIANGLE:
       return (
         <RegularPolygon
-          x={x + width / 2}
-          y={y + height / 2}
+          x={centerX}
+          y={centerY}
           sides={3}
           radius={Math.min(width, height) / 2}
           {...commonProps}
@@ -119,8 +125,8 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.PENTAGON:
       return (
         <RegularPolygon
-          x={x + width / 2}
-          y={y + height / 2}
+          x={centerX}
+          y={centerY}
           sides={5}
           radius={Math.min(width, height) / 2}
           {...commonProps}
@@ -130,8 +136,8 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.HEXAGON:
       return (
         <RegularPolygon
-          x={x + width / 2}
-          y={y + height / 2}
+          x={centerX}
+          y={centerY}
           sides={6}
           radius={Math.min(width, height) / 2}
           {...commonProps}
@@ -141,8 +147,8 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.OCTAGON:
       return (
         <RegularPolygon
-          x={x + width / 2}
-          y={y + height / 2}
+          x={centerX}
+          y={centerY}
           sides={8}
           radius={Math.min(width, height) / 2}
           {...commonProps}
@@ -152,11 +158,9 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.STAR:
       return (
         <Shape
-          x={x}
-          y={y}
+          x={centerX}
+          y={centerY}
           sceneFunc={(ctx, shape) => {
-            const centerX = width / 2;
-            const centerY = height / 2;
             const outerR = Math.min(width, height) / 2;
             const innerR = outerR * 0.4;
             const pointsNum = 5;
@@ -164,9 +168,9 @@ export const renderShape = (shapeType, props) => {
             const step = Math.PI / pointsNum;
             ctx.beginPath();
             for (let i = 0; i < pointsNum; i++) {
-              ctx.lineTo(centerX + Math.cos(rot) * outerR, centerY + Math.sin(rot) * outerR);
+              ctx.lineTo(Math.cos(rot) * outerR, Math.sin(rot) * outerR);
               rot += step;
-              ctx.lineTo(centerX + Math.cos(rot) * innerR, centerY + Math.sin(rot) * innerR);
+              ctx.lineTo(Math.cos(rot) * innerR, Math.sin(rot) * innerR);
               rot += step;
             }
             ctx.closePath();
@@ -179,12 +183,14 @@ export const renderShape = (shapeType, props) => {
     case SHAPE_TYPES.CROSS:
       return (
         <Shape
+          x={centerX}
+          y={centerY}
           sceneFunc={(ctx, shape) => {
             const barWidth = width * 0.2;
             const barHeight = height * 0.2;
             ctx.beginPath();
-            ctx.rect(x, y + height / 2 - barHeight / 2, width, barHeight);
-            ctx.rect(x + width / 2 - barWidth / 2, y, barWidth, height);
+            ctx.rect(-width/2, -barHeight/2, width, barHeight);
+            ctx.rect(-barWidth/2, -height/2, barWidth, height);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}
@@ -195,11 +201,13 @@ export const renderShape = (shapeType, props) => {
     default:
       return (
         <Rect
-          x={x}
-          y={y}
+          x={centerX}
+          y={centerY}
           width={width}
           height={height}
           cornerRadius={cornerRadius}
+          offsetX={width / 2}
+          offsetY={height / 2}
           {...commonProps}
         />
       );
