@@ -1,28 +1,25 @@
-// app/event/confirm-purchase.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  StyleSheet,
   ScrollView,
   Alert,
   Dimensions,
   Animated,
-  TouchableOpacity,
 } from 'react-native';
 import {
   Text,
   Button,
-  Card,
   useTheme,
   Divider,
   ActivityIndicator,
 } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { buyTicket, fetchEventById, fetchEventPriceTiers } from '../../utils/api';
+import { buyTicket, fetchEventPriceTiers } from '../../utils/api';
 import { Ionicons } from '@expo/vector-icons';
 import SelectedSeatsBill from './SelectedSeatsBill';
 import TaxiStep from '../cinema/components/TaxiStep';
-import FoodStep from '../cinema/components/FoodStep';
+import { purchaseStyles } from './purchaseStyles';
+import { PurchaseStepper } from './PurchaseStepper';
 
 type PriceTier = {
   id: number;
@@ -39,13 +36,6 @@ type EventType = {
   image_url?: string;
 };
 
-type VenuePlan = {
-  id: number;
-  site_name: string;
-  elements: any[];
-  metadata: any;
-};
-
 type SeatBillItem = {
   id: string | number;
   categoryName?: string;
@@ -59,95 +49,19 @@ type SeatBillItem = {
 
 // Composant pour l'en-tête
 const PurchaseHeader = ({ onBack, theme }: { onBack: () => void; theme: any }) => (
-  <View style={styles.header}>
+  <View style={[purchaseStyles.header, { backgroundColor: theme.colors.background }]}>
     <Ionicons
       name="arrow-back"
       size={24}
       color={theme.colors.primary}
       onPress={onBack}
-      style={styles.backButton}
+      style={purchaseStyles.backButton}
     />
-    <Text variant="headlineSmall" style={styles.title}>
+    <Text variant="headlineSmall" style={[purchaseStyles.title, { color: theme.colors.onBackground }]}>
       Confirmation d'achat
     </Text>
   </View>
 );
-
-// Composant pour le stepper
-const PurchaseStepper = ({ step }: { step: number }) => (
-  <View style={styles.stepperContainer}>
-    <View style={styles.stepper}>
-      <View style={[styles.step, step >= 1 && styles.stepActive]}>
-        <Text style={[styles.stepText, step >= 1 && styles.stepTextActive]}>1</Text>
-        <Text style={[styles.stepLabel, step >= 1 && styles.stepLabelActive]}>Deplacement</Text>
-      </View>
-      <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
-      <View style={[styles.step, step >= 2 && styles.stepActive]}>
-        <Text style={[styles.stepText, step >= 2 && styles.stepTextActive]}>2</Text>
-        <Text style={[styles.stepLabel, step >= 2 && styles.stepLabelActive]}>Confirmation</Text>
-      </View>
-    </View>
-  </View>
-);
-
-// Composant pour la carte d'événement
-const EventCard = ({ event, tier, theme }: { event: EventType; tier: PriceTier | null; theme: any }) => {
-  const getTierColor = (tierType: string) => {
-    const colors = {
-      'VIP': '#FFD700',
-      'BRONZE': '#CD7F32',
-      'ARGENT': '#C0C0C0',
-      'PUBLIC': theme.colors.primary,
-    };
-    return colors[tierType as keyof typeof colors] || theme.colors.primary;
-  };
-
-  const formatDate = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
-    } catch {
-      return iso;
-    }
-  };
-
-  return (
-    <Card style={[styles.card, { width: screenWidth }]} elevation={4}>
-      <Card.Content>
-        <View style={styles.eventHeader}>
-          <Text variant="titleLarge" style={styles.eventName}>
-            {event.name}
-          </Text>
-          {tier && (
-            <View style={[styles.tierBadge, { backgroundColor: getTierColor(tier.tier_type) }]}>
-              <Text style={styles.tierBadgeText}>{tier.tier_type}</Text>
-            </View>
-          )}
-        </View>
-        
-        <View style={styles.eventDetails}>
-          <Ionicons name="calendar-outline" size={16} color="#666" />
-          <Text variant="bodyMedium" style={styles.detailText}>
-            {formatDate(event.date)}
-          </Text>
-        </View>
-
-        <View style={styles.eventDetails}>
-          <Ionicons name="location-outline" size={16} color="#666" />
-          <Text variant="bodyMedium" style={styles.detailText}>
-            {event.venue}
-          </Text>
-        </View>
-
-        <Divider style={styles.divider} />
-      </Card.Content>
-    </Card>
-  );
-};
 
 // Composant principal
 export default function ConfirmPurchase() {
@@ -157,8 +71,6 @@ export default function ConfirmPurchase() {
 
   // Récupération des paramètres
   const event = JSON.parse(params.event as string) as EventType;
-  const venuePlans = params.venuePlans ? JSON.parse(params.venuePlans as string) as VenuePlan[] : [];
-  const ticketTotal = Number(params.total);
   const price = Number(params.price ?? 0);
   const seat = JSON.parse(params.seats as any) as SeatBillItem[];
   
@@ -228,7 +140,13 @@ export default function ConfirmPurchase() {
               if (matchingTier.available_quantity < seat.length) {
                 Alert.alert(
                   'Attention', 
-                  `Seulement ${matchingTier.available_quantity} tickets disponibles pour la catégorie ${matchingTier.tier_type}. Vous avez sélectionné ${seat.length} sièges.`
+                  `Seulement ${
+                    matchingTier.available_quantity
+                  } tickets disponibles pour la catégorie ${
+                    matchingTier.tier_type
+                  }. Vous avez sélectionné ${
+                    seat.length
+                  } sièges.`
                 );
               }
             } else {
@@ -361,18 +279,25 @@ export default function ConfirmPurchase() {
 
   if (tiersLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[purchaseStyles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Chargement des types de tickets...</Text>
+        <Text style={[purchaseStyles.loadingText, { color: theme.colors.onSurfaceVariant }]}>
+          Chargement des types de tickets...
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView 
+      contentContainerStyle={[
+        purchaseStyles.container, 
+        { backgroundColor: theme.colors.background }
+      ]}
+    >
       <PurchaseHeader onBack={() => router.back()} theme={theme} />
       
-      <PurchaseStepper step={step} />
+      <PurchaseStepper step={step} theme={theme} />
 
       <Animated.View
         style={[
@@ -395,28 +320,40 @@ export default function ConfirmPurchase() {
               theme={theme}
             />
     
-            <View style={styles.pricePreview}>
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Total tickets:</Text>
-                <Text style={styles.priceValue}>{price} MGA</Text>
+            <View style={[purchaseStyles.pricePreview, { backgroundColor: theme.colors.primaryContainer }]}>
+              <View style={purchaseStyles.priceRow}>
+                <Text style={[purchaseStyles.priceLabel, { color: theme.colors.onPrimaryContainer }]}>
+                  Total tickets:
+                </Text>
+                <Text style={[purchaseStyles.priceValue, { color: theme.colors.onPrimaryContainer }]}>
+                  {price} MGA
+                </Text>
               </View>
               {taxiOption.price > 0 && (
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>Taxi:</Text>
-                  <Text style={styles.priceValue}>+ {taxiOption.price} MGA</Text>
+                <View style={purchaseStyles.priceRow}>
+                  <Text style={[purchaseStyles.priceLabel, { color: theme.colors.onPrimaryContainer }]}>
+                    Taxi:
+                  </Text>
+                  <Text style={[purchaseStyles.priceValue, { color: theme.colors.onPrimaryContainer }]}>
+                    + {taxiOption.price} MGA
+                  </Text>
                 </View>
               )}
-              <View style={[styles.priceRow, styles.totalRow]}>
-                <Text style={styles.totalLabel}>Total à payer:</Text>
-                <Text style={styles.totalValue}>{price + taxiOption.price} MGA</Text>
+              <View style={[purchaseStyles.priceRow, purchaseStyles.totalRow]}>
+                <Text style={[purchaseStyles.totalLabel, { color: theme.colors.onPrimaryContainer }]}>
+                  Total à payer:
+                </Text>
+                <Text style={[purchaseStyles.totalValue, { color: theme.colors.onPrimaryContainer }]}>
+                  {price + taxiOption.price} MGA
+                </Text>
               </View>
             </View>
 
             <Button 
               mode="contained" 
               onPress={proceedToNextStep}
-              style={styles.nextButton}
-              contentStyle={styles.nextButtonContent}
+              style={purchaseStyles.nextButton}
+              contentStyle={purchaseStyles.nextButtonContent}
               disabled={!selectedTier}
               icon="arrow-right"
             >
@@ -426,34 +363,41 @@ export default function ConfirmPurchase() {
         )}       
 
         {step === 2 && (
-          <View style={styles.stepContainer}>
-            <View style={styles.confirmationSection}>
-              <View style={styles.orderDetails}>
+          <View style={purchaseStyles.stepContainer}>
+            <View style={purchaseStyles.confirmationSection}>
+              <View style={[purchaseStyles.orderDetails, { backgroundColor: theme.colors.surfaceVariant }]}>
                 
                 {taxiOption.price > 0 && (
-                  <View style={styles.orderRow}>
-                    <Text style={styles.orderLabel}>Taxi:</Text>
-                    <Text style={styles.orderValue}>{taxiOption.label} - {taxiOption.price} MGA</Text>
+                  <View style={purchaseStyles.orderRow}>
+                    <Text style={[purchaseStyles.orderLabel, { color: theme.colors.onSurfaceVariant }]}>
+                      Taxi:
+                    </Text>
+                    <Text style={[purchaseStyles.orderValue, { color: theme.colors.onSurfaceVariant }]}>
+                      {taxiOption.label} - {taxiOption.price} MGA
+                    </Text>
                   </View>
                 )}
           
-                <Divider style={styles.orderDivider} />
+                <Divider style={[purchaseStyles.orderDivider, { backgroundColor: theme.colors.outlineVariant }]} />
           
-                <View style={[styles.orderRow, styles.totalRow]}>
-                  <Text style={styles.totalLabel}>Total à payer:</Text>
-                  <Text style={styles.totalValue}>
+                <View style={[purchaseStyles.orderRow, purchaseStyles.totalRow]}>
+                  <Text style={[purchaseStyles.totalLabel, { color: theme.colors.onSurface }]}>
+                    Total à payer:
+                  </Text>
+                  <Text style={[purchaseStyles.totalValue, { color: theme.colors.primary }]}>
                     {price + taxiOption.price} MGA
                   </Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.buttonContainer}>
+            <View style={purchaseStyles.buttonContainer}>
               <Button 
                 mode="outlined" 
                 onPress={goBackToPreviousStep}
-                style={styles.backButtonStep}
+                style={[purchaseStyles.backButtonStep, { borderColor: theme.colors.outline }]}
                 icon="arrow-left"
+                textColor={theme.colors.primary}
               >
                 Précédent
               </Button>
@@ -463,7 +407,7 @@ export default function ConfirmPurchase() {
                 onPress={handleConfirmPurchase}
                 loading={loading}
                 disabled={loading || !selectedTier}
-                style={styles.confirmButton}
+                style={purchaseStyles.confirmButton}
                 icon="check"
               >
                 Confirmer l'achat
@@ -476,408 +420,5 @@ export default function ConfirmPurchase() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    alignItems: 'center',
-    minHeight: '100%',
-    backgroundColor: '#f8f9fa',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '100%',
-  },
-  backButton: {
-    marginRight: 15,
-    padding: 4,
-  },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    marginRight: 40,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  stepperContainer: {
-    width: '100%',
-    marginBottom: 30,
-  },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  step: {
-    alignItems: 'center',
-    paddingHorizontal: 1,
-  },
-  stepActive: {
-    // Active state styles
-  },
-  stepText: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e0e0e0',
-    textAlign: 'center',
-    lineHeight: 32,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#666',
-    marginBottom: 4,
-  },
-  stepTextActive: {
-    backgroundColor: '#2196F3',
-    color: '#fff',
-  },
-  stepLabel: {
-    fontSize: 10,
-    color: '#666',
-    fontWeight: '400',
-  },
-  stepLabelActive: {
-    color: '#2196F3',
-    fontWeight: 'bold',
-  },
-  stepLine: {
-    width: 60,
-    height: 2,
-    backgroundColor: '#e0e0e0',
-    marginHorizontal: 10,
-  },
-  stepLineActive: {
-    backgroundColor: '#2196F3',
-  },
-  card: {
-    marginBottom: 20,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 15,
-  },
-  eventName: {
-    flex: 1,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginRight: 10,
-  },
-  tierBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  tierBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  eventDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  detailText: {
-    marginLeft: 8,
-    color: '#666',
-  },
-  divider: {
-    marginVertical: 20,
-    backgroundColor: '#ecf0f1',
-  },
-  stepContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    color: '#2c3e50',
-    textAlign: 'center',
-  },
-  tiersContainer: {
-    gap: 12,
-    marginBottom: 30,
-    width: '100%',
-  },
-  tierCard: {
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: '#fff',
-    position: 'relative',
-  },
-  tierCardSelected: {
-    borderWidth: 2,
-    backgroundColor: '#f8f9ff',
-  },
-  tierCardDisabled: {
-    opacity: 0.6,
-    backgroundColor: '#f5f5f5',
-  },
-  tierHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  soldOutBadge: {
-    backgroundColor: '#ffebee',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  soldOutText: {
-    color: '#c62828',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  tierPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 4,
-  },
-  tierAvailability: {
-    fontSize: 12,
-    color: '#7f8c8d',
-  },
-  selectedIndicator: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  nextButton: {
-    borderRadius: 12,
-    paddingVertical: 8,
-    width: '100%',
-    marginTop: 20,
-  },
-  nextButtonContent: {
-    paddingVertical: 8,
-  },
-  quantityStepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  stepperButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#f8f9fa',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#e9ecef',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  stepperButtonDisabled: {
-    opacity: 0.5,
-  },
-  quantityDisplay: {
-    alignItems: 'center',
-    marginHorizontal: 30,
-    minWidth: 80,
-  },
-  quantityText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  quantityLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  quantityHint: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  pricePreview: {
-    backgroundColor: '#e8f5e8',
-    padding: 20,
-    borderRadius: 12,
-    width: '100%',
-    marginBottom: 30,
-    marginTop: 16,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceLabel: {
-    fontSize: 16,
-    color: '#27ae60',
-    fontWeight: '500',
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#27ae60',
-  },
-  quantityActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  backButtonStep: {
-    flex: 1,
-    marginRight: 8,
-  },
-  confirmationHeader: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  confirmationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 12,
-    color: '#2c3e50',
-    textAlign: 'center',
-  },
-  orderDetails: {
-    width: '100%',
-    backgroundColor: '#f8f9fa',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 30,
-  },
-  orderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  orderLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  orderValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#2c3e50',
-  },
-  orderDivider: {
-    marginVertical: 16,
-  },
-  totalRow: {
-    marginBottom: 0,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  totalValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#27ae60',
-  },
-  finalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  confirmButton: {
-    flex: 2,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  confirmButtonContent: {
-    paddingVertical: 6,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginTop: 20,
-    gap: 12,
-  },
-  confirmationSection: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  tierSummaryCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    elevation: 2,
-  },
-  tierSummaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  availabilityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  availabilityText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  tierDivider: {
-    marginVertical: 12,
-  },
-  tierSummaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  tierSummaryLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  tierSummaryValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-});
 
 const screenWidth = Dimensions.get('window').width - 40;
