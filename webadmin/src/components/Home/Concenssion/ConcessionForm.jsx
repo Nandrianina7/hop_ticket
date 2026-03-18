@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import api from '../../../api/api';
 import { getImagePath } from '../../../utils/getImagePath';
 
-const ConcenssionForm = ({ onSave, initialData, concenssionCategories, type='cinema' }) => {
+const ConcenssionForm = ({ onSave, initialData, concenssionCategories, type = 'cinema' }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -157,16 +157,18 @@ const ConcenssionForm = ({ onSave, initialData, concenssionCategories, type='cin
               name="category"
               label="Categorie"
             >
-              {type==='cinema' && concenssionCategories.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.category_name}
-                </MenuItem>
-              ))}
-              {type==='event' && concenssionCategories.map((item) => (
-                <MenuItem key={item.id} value={item.category_name}>
-                  {item.category_name}
-                </MenuItem>
-              ))}
+              {type === 'cinema' &&
+                concenssionCategories.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.category_name}
+                  </MenuItem>
+                ))}
+              {type === 'event' &&
+                concenssionCategories.map((item) => (
+                  <MenuItem key={item.id} value={item.category_name}>
+                    {item.category_name}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
           <Box>

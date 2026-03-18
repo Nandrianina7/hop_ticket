@@ -6,7 +6,7 @@ import DeleteDialog from '../../../ui/DeleteDialog';
 import ConcenssionForm from './ConcessionForm';
 import ConcessionAddQty from './ConcessionAddqty';
 import api from '../../../api/api';
-const ConcessionCard = ({ concessionList = [], onDelete, onUpdate, concenssionCategories}) => {
+const ConcessionCard = ({ concessionList = [], onDelete, onUpdate, concenssionCategories }) => {
   const theme = useTheme();
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -78,7 +78,11 @@ const ConcessionCard = ({ concessionList = [], onDelete, onUpdate, concenssionCa
                 >
                   <DeleteOutlineTwoTone />
                 </IconButton>
-                <ConcenssionForm onSave={onUpdate} initialData={item} concenssionCategories={concenssionCategories} />
+                <ConcenssionForm
+                  onSave={onUpdate}
+                  initialData={item}
+                  concenssionCategories={concenssionCategories}
+                />
                 <ConcessionAddQty
                   item={item}
                   onSave={async ({ id, quantity }) => {

@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-df!t8x*&jli#t^iv__zjj4klghp75@)y&sqsf2mrv56em$22dn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.88.19', '127.0.0.1', "192.168.43.177", '192.168.88.20']
+ALLOWED_HOSTS = ['192.168.88.19', '127.0.0.1', "192.168.43.177", '192.168.88.20', '192.168.1.133']
 
 CORS_ALLOWED_ORIGINS = [
   "http://192.168.88.19:8000", 
@@ -26,7 +26,10 @@ CORS_ALLOWED_ORIGINS = [
   "http://192.168.43.177:8000",
   "http://192.168.43.177:5173",
   "http://192.168.88.20:8081",
-  "http://192.168.88.20:8000"
+  "http://192.168.88.20:8000",
+  "http://192.168.1.133:5173",
+  "http://192.168.1.133:8000",
+  "http://192.168.1.133:8081"
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -38,12 +41,12 @@ CSRF_TRUSTED_ORIGINS = [
   "http://192.168.88.19:8000", 
   "http://192.168.88.19:8081", 
   "http://192.168.88.19:5173",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:8000",
   "http://192.168.43.177:8000",
   "http://192.168.43.177:5173",
-"http://192.168.88.20:8081",
-  "http://192.168.88.20:8000"
+  "http://192.168.88.20:8081",
+  "http://192.168.1.133:5173",
+  "http://192.168.1.133:8000",
+  "http://192.168.1.133:8081"
 ]
 
 # Allow CSRF cookie to be sent cross-origin

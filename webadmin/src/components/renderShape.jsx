@@ -61,10 +61,10 @@ export const renderShape = (shapeType, props) => {
           y={centerY}
         />
       );
-      
+
     case SHAPE_TYPES.DEFORMABLE_QUAD:
       return <DeformablePolygon {...props} />;
-      
+
     case SHAPE_TYPES.TRAPEZOID:
       return (
         <Shape
@@ -72,10 +72,10 @@ export const renderShape = (shapeType, props) => {
           y={centerY}
           sceneFunc={(ctx, shape) => {
             ctx.beginPath();
-            ctx.moveTo(-width/2 + width * 0.2, -height/2);
-            ctx.lineTo(-width/2 + width * 0.8, -height/2);
-            ctx.lineTo(width/2, height/2);
-            ctx.lineTo(-width/2, height/2);
+            ctx.moveTo(-width / 2 + width * 0.2, -height / 2);
+            ctx.lineTo(-width / 2 + width * 0.8, -height / 2);
+            ctx.lineTo(width / 2, height / 2);
+            ctx.lineTo(-width / 2, height / 2);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}
@@ -90,10 +90,10 @@ export const renderShape = (shapeType, props) => {
           y={centerY}
           sceneFunc={(ctx, shape) => {
             ctx.beginPath();
-            ctx.moveTo(-width/2 + width * 0.2, -height/2);
-            ctx.lineTo(width/2, -height/2);
-            ctx.lineTo(-width/2 + width * 0.8, height/2);
-            ctx.lineTo(-width/2, height/2);
+            ctx.moveTo(-width / 2 + width * 0.2, -height / 2);
+            ctx.lineTo(width / 2, -height / 2);
+            ctx.lineTo(-width / 2 + width * 0.8, height / 2);
+            ctx.lineTo(-width / 2, height / 2);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}
@@ -103,12 +103,7 @@ export const renderShape = (shapeType, props) => {
 
     case SHAPE_TYPES.CIRCLE:
       return (
-        <Circle
-          x={centerX}
-          y={centerY}
-          radius={Math.min(width, height) / 2}
-          {...commonProps}
-        />
+        <Circle x={centerX} y={centerY} radius={Math.min(width, height) / 2} {...commonProps} />
       );
 
     case SHAPE_TYPES.TRIANGLE:
@@ -189,8 +184,8 @@ export const renderShape = (shapeType, props) => {
             const barWidth = width * 0.2;
             const barHeight = height * 0.2;
             ctx.beginPath();
-            ctx.rect(-width/2, -barHeight/2, width, barHeight);
-            ctx.rect(-barWidth/2, -height/2, barWidth, height);
+            ctx.rect(-width / 2, -barHeight / 2, width, barHeight);
+            ctx.rect(-barWidth / 2, -height / 2, barWidth, height);
             ctx.closePath();
             ctx.fillStrokeShape(shape);
           }}

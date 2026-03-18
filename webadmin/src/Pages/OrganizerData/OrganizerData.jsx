@@ -16,7 +16,7 @@ const OrganizerData = () => {
       <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
         Organisateur {type}: {xme}
       </Typography>
-      
+
       {type === 'cinema' ? (
         <Box>
           <Movie org_id={orgId} />
@@ -31,9 +31,9 @@ const OrganizerData = () => {
             </Typography>
             <Event org_id={orgId} />
           </Box>
-          
+
           <Divider />
-          
+
           <Box>
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Plans de salle

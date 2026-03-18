@@ -1,3 +1,3 @@
-import EventFoods from "./EventFoods";
+import EventFoods from './EventFoods';
 
 export default EventFoods;

@@ -4,7 +4,6 @@ import ConcessionCard from '../../components/Home/Concenssion/ConcenssionCard';
 import api from '../../api/api';
 import { useEffect, useRef, useState } from 'react';
 
-
 const EventFoods = () => {
   const [concenssionList, setConcenssionList] = useState([]);
   const [count, setCount] = useState(0);
@@ -104,7 +103,6 @@ const EventFoods = () => {
     // fetchConcenssionCategories();
   }, []);
 
-
   return (
     <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <Box sx={{ width: '60%', display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -117,10 +115,10 @@ const EventFoods = () => {
             p: 3,
           }}
         >
-          <ConcenssionForm 
-            onSave={onSendData} 
-            concenssionCategories={concenssionCategories} 
-            type='event'
+          <ConcenssionForm
+            onSave={onSendData}
+            concenssionCategories={concenssionCategories}
+            type="event"
           />
         </Paper>
 

@@ -1,16 +1,6 @@
 import { Button } from '@mui/material';
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
-import {
-  Stage,
-  Layer,
-  Group,
-  Rect,
-  Text,
-  Circle,
-  Transformer,
-  RegularPolygon,
-  Shape,
-} from 'react-konva';
+import { Stage, Layer, Group, Text, Circle, Transformer } from 'react-konva';
 import { renderShape } from './renderShape';
 import { SHAPE_TYPES } from './shapeType';
 import ShapePickerDialog from './ShapPicker';

@@ -41,7 +41,7 @@ import {
 import MetricCard from '../../../ui/MetricCard';
 import { stringToColor } from '../../../utils/stringToColor';
 import ManageDialog from '../../../ui/ManageDialog';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import VenuePlanBuilder from '../../VenueBuilder/VenueBuilder';
 import { getCookie } from '../../../utils/getCookie';
 
@@ -305,13 +305,16 @@ const Dashboard = ({ data, allCustomers, onCreate, onSaveVenue }) => {
                 sx={{ mb: 2 }}
                 onClick={() => setOpen(true)}
               >
-                Cree un nouveau evenement
+                Nouveau evenement
               </Button>
-              {user_role === 'event_organizer' && (
-                <Button variant="outlined" onClick={() => setOpenVenueB(true)}>
-                  Cree un plan de salle
-                </Button>
-              )}
+              {user_role === 'event_organizer' ||
+                (user_role === 'admin' && (
+                  <Link to={'/event-layout'}>
+                    <Button variant="outlined" fullWidth>
+                      Cree un plan de salle
+                    </Button>
+                  </Link>
+                ))}
             </CardContent>
           </Card>
         </Box>

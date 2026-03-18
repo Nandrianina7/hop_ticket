@@ -15,6 +15,8 @@ import {
   LivingOutlined,
   History,
   FoodBank,
+  LocationCity,
+  MapOutlined,
 } from '@mui/icons-material';
 import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
 import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
@@ -41,9 +43,10 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
       path: '/cinema',
       children: [
         { text: 'Films', path: '/cinema/movies', icon: <Movie /> },
-        { text: 'Halls', path: '/cinema/halls', icon: <House /> },
+        { text: 'Salles', path: '/cinema/halls', icon: <House /> },
       ],
     },
+    { icon: <MapOutlined />, path: '/event-layout', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
   ];
 
@@ -178,7 +181,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
                           location.pathname === item.path ? '#fff' : theme.palette.text.primary,
                       }}
                     >
-                      {item.text}
+                      {child.text}
                     </Typography>
                   </MenuItem>
                 ))}

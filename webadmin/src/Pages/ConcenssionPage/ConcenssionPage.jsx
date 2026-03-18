@@ -93,27 +93,27 @@ const ConcenssionPage = () => {
     fetchConcenssion();
     // fetchConcenssionCategories();
   }, []);
-    const [concenssionCategories, setConcenssionCategories] = useState([]);
-    const fetchConcenssionCategories = async () => {
-      try {
-        const response = await api.get('/cinema/restaurantitem/categories/');
-  
-        if (!response.data) {
-          console.log('Server not responding');
-          return;
-        }
-  
-        console.log('Categories fetched successfully:', response.data);
-        setConcenssionCategories(response.data.data || []);
-      } catch (error) {
-        console.log('Failed to load categories from server', error);
+  const [concenssionCategories, setConcenssionCategories] = useState([]);
+  const fetchConcenssionCategories = async () => {
+    try {
+      const response = await api.get('/cinema/restaurantitem/categories/');
+
+      if (!response.data) {
+        console.log('Server not responding');
+        return;
       }
-    };
-  
-    useEffect(() => {
-      // fetchConcenssion();
-      fetchConcenssionCategories();
-    }, []);
+
+      console.log('Categories fetched successfully:', response.data);
+      setConcenssionCategories(response.data.data || []);
+    } catch (error) {
+      console.log('Failed to load categories from server', error);
+    }
+  };
+
+  useEffect(() => {
+    // fetchConcenssion();
+    fetchConcenssionCategories();
+  }, []);
   const totalPages = Math.ceil(count / pageSize);
 
   return (
