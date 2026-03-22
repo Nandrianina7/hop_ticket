@@ -361,8 +361,12 @@ export default function ConfirmPurchase() {
             </Button>
           </>
         )}       
-
         {step === 2 && (
+          <View>
+            <Text>Restaurant</Text>
+          </View>
+        )}
+        {step === 3 && (
           <View style={purchaseStyles.stepContainer}>
             <View style={purchaseStyles.confirmationSection}>
               <View style={[purchaseStyles.orderDetails, { backgroundColor: theme.colors.surfaceVariant }]}>

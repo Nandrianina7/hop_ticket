@@ -30,6 +30,7 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
       lon: '',
       lat: '',
     },
+    owner_percentage: 0,
   });
 
   const handleInput = (e) => {
@@ -73,6 +74,7 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
         description: initialData?.description || '',
         venue: initialData?.venue || '',
         file: initialData?.file || null,
+        owner_percentage: initialData?.owner_percentage || 0,
       });
     }
   }, [open]);
@@ -208,7 +210,6 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
               )}
             </Stack>
           </Grid>
-
           <Grid item xs={12}>
             <Stack direction="row" spacing={2}>
               <DatePicker
@@ -239,6 +240,20 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
             </Stack>
           </Grid>
         </Grid>
+        <TextField 
+          type='number'
+          fullWidth 
+          sx={{ mt: 1 }} 
+          size='small' 
+          placeholder='Commission'
+          InputProps={{
+            sx: { borderRadius: 2 },
+          }}
+          name='owner_percentage'
+          value={formData.owner_percentage}
+          onChange={handleInput}
+          label='Commission'
+        />
       </DialogContent>
 
       <Divider sx={{ my: 1 }} />
