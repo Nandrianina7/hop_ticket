@@ -27,19 +27,38 @@ export const PurchaseStepper = ({ step, theme }: { step: number; theme: any }) =
           backgroundColor: step >= 2 ? theme.colors.primary : theme.colors.surfaceVariant 
         }
       ]} />
+
       <View style={[purchaseStyles.step, step >= 2 && purchaseStyles.stepActive]}>
+        <Text style={[
+          purchaseStyles.stepText,
+          {
+            backgroundColor: step >= 2 ? theme.colors.primary : theme.colors.surfaceVariant,
+            color: step >= 2 ? '#fff' : theme.colors.onSurfaceVariant
+          }
+        ]}>2</Text>
+        <Text style={[
+          purchaseStyles.stepLabel,
+          { color: step >= 2 ? theme.colors.primary : theme.colors.onSurfaceVariant }
+        ]}>Restauration</Text>
+      </View>
+      <View style={[
+        purchaseStyles.stepLine,
+        { backgroundColor: step >= 3 ? theme.colors.primary : theme.colors.surfaceVariant }
+      ]} />
+
+      <View style={[purchaseStyles.step, step >= 3 && purchaseStyles.stepActive]}>
         <Text style={[
           purchaseStyles.stepText, 
           step >= 2 && purchaseStyles.stepTextActive,
           { 
-            backgroundColor: step >= 2 ? theme.colors.primary : theme.colors.surfaceVariant,
+            backgroundColor: step >= 3 ? theme.colors.primary : theme.colors.surfaceVariant,
             color: step >= 2 ? '#fff' : theme.colors.onSurfaceVariant 
           }
-        ]}>2</Text>
+        ]}>3</Text>
         <Text style={[
           purchaseStyles.stepLabel, 
-          step >= 2 && purchaseStyles.stepLabelActive,
-          { color: step >= 2 ? theme.colors.primary : theme.colors.onSurfaceVariant }
+          step >= 3 && purchaseStyles.stepLabelActive,
+          { color: step >= 3 ? theme.colors.primary : theme.colors.onSurfaceVariant }
         ]}>Confirmation</Text>
       </View>
     </View>

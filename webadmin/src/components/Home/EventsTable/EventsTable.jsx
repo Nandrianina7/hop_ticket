@@ -51,6 +51,7 @@ const EventsTable = ({
     price_tiers: [],
     image: null,
     location_name: '',
+    owner_percentage: 0,
   });
   console.log('PRICE TIERS:', selectedData.price_tiers);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -85,6 +86,7 @@ const EventsTable = ({
       time: item.date ? dayjs(item.date.split(' ')[1]) : dayjs(),
       price_tiers: item.price_tiers,
       image: item.image || null,
+      owner_percentage: item.owner_percentage || 0
     });
     setOpen(true);
     handleMenuClose();
@@ -101,6 +103,7 @@ const EventsTable = ({
       time: item.date ? dayjs(item.date.split(' ')[1]) : dayjs(),
       price_tiers: item.price_tiers,
       image: item.image || null,
+      owner_percentage: item.owner_percentage || 0,
     });
     setOpenDelete(true);
     handleMenuClose();
@@ -116,6 +119,7 @@ const EventsTable = ({
       time: item.date ? dayjs(item.date.split(' ')[1]) : dayjs(),
       price_tiers: item.price_tiers,
       image: item.image || null,
+      owner_percentage: item.owner_percentage || 0
     });
     setOpenInfo(true);
   };

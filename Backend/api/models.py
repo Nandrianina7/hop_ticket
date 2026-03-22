@@ -49,17 +49,25 @@ class EventPlan(models.Model):
 
 
 
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Event(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
     name = models.CharField(max_length=100)
     date = models.DateTimeField()
     venue = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     tickets_sold = models.PositiveIntegerField(default=0)
     image = models.ImageField(
-        upload_to='event_image',
-        null=True,
-        blank=True,
+        upload_to='event_image', 
+        null=True, 
+        blank=True, 
         help_text='Upload event image'
     )
     likes = models.ManyToManyField(
@@ -70,33 +78,40 @@ class Event(models.Model):
     average_rating = models.FloatField(default=0.0)
     total_ratings = models.PositiveIntegerField(default=0)
     organizer = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='event', default=1)
-    def update_rating(self, new_rating):
-        """Met à jour la note moyenne de l'événement"""
-        total_score = self.average_rating * self.total_ratings
-        self.total_ratings += 1
-        self.average_rating = (total_score + new_rating) / self.total_ratings
-        self.save()
+
+    base_ticket_price = models.FloatField(default=10.0)
+
+    owner_percentage = models.FloatField(
+        default=0.0,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+        help_text="Percentage of ticket price that goes to the app owner (min 1%)."
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text="Event approval status"
+    )
+
     class Meta:
         ordering = ['-date']
 
-    def update_availability(self):
-        self.tickets_sold = self.tickets.count()
-        self.save()
+    def save(self, *args, **kwargs):
+     # Ensure minimum 1% if entered
+        if self.owner_percentage != 0 and self.owner_percentage < 1:
+            self.owner_percentage = 1
+
+    # Approval logic
+        if self.owner_percentage == 0:
+            self.status = 'pending'
+        else:
+            self.status = 'approved'
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} on {self.date.strftime('%Y-%m-%d')}"
-
-    def get_calendar_data(self):
-        """Retourne les données pour le calendrier"""
-        return {
-            'id': self.id,
-            'name': self.name,
-            'date': self.date,
-            'venue': self.venue,
-            'image_url': self.image.url if self.image else None,
-            'type': 'event',
-            'description': self.description,
-        }
 
 class EventLocation(models.Model):
     # customer= models.ForeignKey(Customer, on_delete=models.CASCADE)
@@ -144,7 +159,16 @@ class PriceTier(models.Model):
     class Meta:
         unique_together = ('event', 'tier_type')
         ordering = ['-price']
-
+    @property
+    def owner_earnings(self):
+        return float(self.price) * (self.event.owner_percentage / 100)
+    @property
+    def organizer_earning(self):
+        return float(self.price) - self.owner_earnings
+    @property
+    def final_price(self):
+        return float(self.price)
+    
     def __str__(self):
         return f"{self.tier_type} - ${self.price} ({self.event.name})"
 class Ticket(models.Model):

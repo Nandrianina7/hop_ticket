@@ -159,40 +159,51 @@ class OrganizerEventsView(APIView):
 @permission_classes([IsAuthenticated])
 # @parser_classes([MultiPartParser, FormParser])
 def add_addEvent(request):
-  
   try:
-    print(f'recevied data {request.data}')
+    print(f'received data {request.data}')
+    
     user_email = request.user
     admin = Admin.objects.get(email=user_email)
-    if not admin:
-      return Response({"message": "Sorry no user found"})
-    
+
     name = request.data.get("name")
     date = request.data.get("date")
     description = request.data.get("description")
     venue = request.data.get("venue")
     image = request.data.get("file")
-    if not all([name, date, venue]):
-      return Response({"message": "All fields are required"}, 
-                      status=status.HTTP_400_BAD_REQUEST)
-    
-    event = models.Event.objects.create(
-      name=name,
-      date=date,
-      description=description,
-      venue=venue,
-      tickets_sold=0,
-      image=image,
-      organizer=admin
-    )
-    serializer = serializers.EventSerializer(event)
-    return Response({"message": "Event created successfully", "event": serializer.data}, 
-                    status=status.HTTP_201_CREATED)
-  
-  except Exception as e:
-    return Response({"error": str(e)}, 
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    percent = request.data.get("owner_percentage")
 
+    if not all([name, date, venue]):
+      return Response(
+        {"message": "All fields are required"},
+        status=status.HTTP_400_BAD_REQUEST
+      )
+
+    data = {
+      "name": name,
+      "date": date,
+      "description": description,
+      "venue": venue,
+      "image": image,
+      "organizer": admin.id, 
+      "owner_percentage": int(percent)
+    }
+
+    serializer = serializers.EventSerializer(data=data)
+
+    if not serializer.is_valid():
+      print(f'Error {serializer.errors}')
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    event = serializer.save(tickets_sold=0)
+
+    return Response({
+      "message": "Event created successfully",
+      "event": serializer.data
+    }, status=status.HTTP_201_CREATED)
+
+  except Exception as e:
+    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+  
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getAllEvent(request):
