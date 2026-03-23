@@ -10,13 +10,14 @@ import {
   TextField,
   InputAdornment,
   Divider,
+  alpha,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ManageDialog from '../../../ui/ManageDialog';
 import EventsTable from '../EventsTable';
 import AddIcon from '@mui/icons-material/Add';
 import { StyledButton } from '../../../utils/StyledButton';
-import { SearchTwoTone } from '@mui/icons-material';
+import { CheckCircleRounded, SearchTwoTone, WarningAmberRounded } from '@mui/icons-material';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -31,6 +32,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
   const [openDialog, setOpenDialog] = useState(false);
   const [index, setIndex] = useState(0);
   const [activeFilter, setActiveFilter] = useState('tous');
+  const [stateFilter, setStateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const meassage = [
     { title: 'Organisez vos evenements', subtitle: '' },
@@ -66,15 +68,22 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
         event.venue?.toLowerCase().includes(searchLower)
     );
   };
-  const getFilterEvent = () => {
+
+  const filteredData = useMemo(() => {
     let result = data || [];
     result = filterEventsByDate(result, activeFilter);
 
     result = filteredEventsBySearc(result, searchTerm);
 
+    if (stateFilter !== 'all') {
+      result = result.filter((event) => event.status === stateFilter);
+    }
     return result;
-  };
-  const filteredData = getFilterEvent();
+  }, [data, activeFilter, searchTerm, stateFilter])
+
+  const pendingtrStatus = data.filter((event) => event.status === 'pending');
+  const approvedStatus = data.filter((event) => event.status === 'approved');
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % meassage.length);
@@ -107,7 +116,67 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
                 {meassage[index].subtitle}
               </Typography>
             </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                alignItems: 'center',
+              }}
+            >
+              <Box
+                component='button'
+                sx={{
+                  px: 2,
+                  py: 1,
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.error.light, 0.1),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  minWidth: 110,
+                  cursor: 'pointer',
+                  border: 'none'
+                }}
+                onClick={() => setStateFilter('pending')}
+              >
+                <WarningAmberRounded sx={{ color: theme.palette.error.main }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    En attente
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold" color="error">
+                    {pendingtrStatus.length}
+                  </Typography>
+                </Box>
+              </Box>
 
+              <Box
+                component='button'
+                sx={{
+                  px: 2,
+                  py: 1,
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.success.light, 0.2),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  minWidth: 110,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setStateFilter('approved')}
+              >
+                <CheckCircleRounded sx={{ color: theme.palette.success.main }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Approuvé
+                  </Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    {approvedStatus.length}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
             <StyledButton
               variant="contained"
               color="primary"

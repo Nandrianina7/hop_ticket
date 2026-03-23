@@ -240,19 +240,19 @@ const ManageDialog = ({ open, onClose, onClick, type, initialData = {}, venue })
             </Stack>
           </Grid>
         </Grid>
-        <TextField 
-          type='number'
-          fullWidth 
-          sx={{ mt: 1 }} 
-          size='small' 
-          placeholder='Commission'
+        <TextField
+          type="number"
+          fullWidth
+          sx={{ mt: 1 }}
+          size="small"
+          placeholder="Commission"
           InputProps={{
             sx: { borderRadius: 2 },
           }}
-          name='owner_percentage'
+          name="owner_percentage"
           value={formData.owner_percentage}
           onChange={handleInput}
-          label='Commission'
+          label="Commission"
         />
       </DialogContent>
 
