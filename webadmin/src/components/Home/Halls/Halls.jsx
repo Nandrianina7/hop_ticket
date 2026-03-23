@@ -98,6 +98,8 @@ const Halls = ({
     await onGetCinemaHalls(selectedCinema?.id);
   };
   const handleSaveHallSeats = (formdata) => {
+    console.log('This the form', formdata);
+
     onCreateHallSeats(formdata);
     setOpenDrawer(false);
   };
@@ -188,7 +190,12 @@ const Halls = ({
       }}
       onClose={toggleOpen(false)}
     >
-      <Seat id={selectedCinema?.id} onSaveHall={handleSaveHallSeats} type="create" />
+      <Seat
+        id={selectedCinema?.id}
+        onSaveHall={handleSaveHallSeats}
+        type="create"
+        allowedAction={true}
+      />
       <Box sx={{ display: 'flex', position: 'absolute', top: 2, right: 2 }}>
         <IconButton onClick={toggleOpen(false)}>
           <Close />

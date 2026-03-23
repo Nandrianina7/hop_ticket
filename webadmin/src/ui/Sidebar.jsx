@@ -17,6 +17,7 @@ import {
   FoodBank,
   LocationCity,
   MapOutlined,
+  Money,
 } from '@mui/icons-material';
 import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
 import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
@@ -48,6 +49,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
     },
     { icon: <MapOutlined />, path: '/event-layout', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
+    { icon: <Money />, path: '/commission', text: 'Commission' },
   ];
 
   const itemsForOrganizer = [

@@ -21,6 +21,7 @@ import TestPlayer from './components/Home/testPlayer/testPlayer';
 import Organizators from './Pages/Organizator';
 import OrganizerData from './Pages/OrganizerData';
 import EventFoods from './Pages/EventFoods';
+import CommissionPage from './Pages/Commission';
 
 export const router = createHashRouter([
   {
@@ -49,6 +50,7 @@ export const router = createHashRouter([
           { path: 'history', element: <Organizators /> },
           { path: 'organizer/data', element: <OrganizerData /> },
           { path: 'event/food', element: <EventFoods /> },
+          { path: 'commission', element: <CommissionPage /> },
         ],
       },
     ],

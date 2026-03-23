@@ -19,7 +19,7 @@ import {
   Button,
   Divider,
 } from '@mui/material';
-import { LocationOn, MoreVert, Edit, Delete, Visibility } from '@mui/icons-material';
+import { LocationOn, MoreVert, Edit, Delete, Visibility, Money } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { stringToColor } from '../../../utils/stringToColor';
 import ManageDialog from '../../../ui/ManageDialog';
@@ -52,6 +52,7 @@ const EventsTable = ({
     image: null,
     location_name: '',
     owner_percentage: 0,
+    status: '',
   });
   console.log('PRICE TIERS:', selectedData.price_tiers);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -86,7 +87,8 @@ const EventsTable = ({
       time: item.date ? dayjs(item.date.split(' ')[1]) : dayjs(),
       price_tiers: item.price_tiers,
       image: item.image || null,
-      owner_percentage: item.owner_percentage || 0
+      owner_percentage: item.owner_percentage || 0,
+      status: '' || undefined,
     });
     setOpen(true);
     handleMenuClose();
@@ -104,6 +106,7 @@ const EventsTable = ({
       price_tiers: item.price_tiers,
       image: item.image || null,
       owner_percentage: item.owner_percentage || 0,
+      status: '' || undefined,
     });
     setOpenDelete(true);
     handleMenuClose();
@@ -119,7 +122,8 @@ const EventsTable = ({
       time: item.date ? dayjs(item.date.split(' ')[1]) : dayjs(),
       price_tiers: item.price_tiers,
       image: item.image || null,
-      owner_percentage: item.owner_percentage || 0
+      owner_percentage: item.owner_percentage || 0,
+      status: '' || undefined,
     });
     setOpenInfo(true);
   };
@@ -263,7 +267,21 @@ const EventsTable = ({
                   }}
                 ></CardMedia>
                 <Box sx={{ position: 'absolute', top: 16, right: 16 }}>{getStatusChip(item)}</Box>
-
+                <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
+                  <Chip
+                    label={item.status === 'pending' ? 'En attente': 'Approuvé'}
+                    color={item.status === 'pending' ? 'error' : 'secondary'}
+                    size="small"
+                    sx={{
+                      borderRadius: 10,
+                      color: 'white',
+                      backgroundColor:
+                        item.status === 'pending'
+                          ? '#8b0404'
+                          : alpha(stringToColor(item.status), 0.6),
+                    }}
+                  />
+                </Box>
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, p: 1.2 }}>
                   {allow_action && (
                     <Box
@@ -302,6 +320,11 @@ const EventsTable = ({
                   >
                     {item.description}
                   </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Commission: {item.owner_percentage}%
+                    </Typography>
+                  </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LocationOn fontSize="small" color="action" />
                     <Typography variant="body2" color="text.secondary">
