@@ -21,6 +21,7 @@ urlpatterns = [
   path('organizer/register/', OrganizerRegisterView.as_view(), name='organizer_register'),
   path('event_organizer/signup/', EventOrganizerRegisterView.as_view(), name='organizer_signup'),
   path('all_organizers/', AllOrganisatorView.as_view(), name='list_organizators'),
+  path('customer_info/<int:pk>/', views.CustomerInfoView.as_view(), name='custoemr_info'),
   
   # mobile urls
   path('mobile/register/', CustomerRegisterView.as_view(), name='customer-register'),
