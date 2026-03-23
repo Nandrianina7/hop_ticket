@@ -28,7 +28,7 @@ export const PurchaseStepper = ({ step, theme }: { step: number; theme: any }) =
         }
       ]} />
 
-      <View style={[purchaseStyles.step, step >= 2 && purchaseStyles.stepActive]}>
+      {/* <View style={[purchaseStyles.step, step >= 2 && purchaseStyles.stepActive]}>
         <Text style={[
           purchaseStyles.stepText,
           {
@@ -43,10 +43,10 @@ export const PurchaseStepper = ({ step, theme }: { step: number; theme: any }) =
       </View>
       <View style={[
         purchaseStyles.stepLine,
-        { backgroundColor: step >= 3 ? theme.colors.primary : theme.colors.surfaceVariant }
-      ]} />
+        { backgroundColor: step >= 2 ? theme.colors.primary : theme.colors.surfaceVariant }
+      ]} /> */}
 
-      <View style={[purchaseStyles.step, step >= 3 && purchaseStyles.stepActive]}>
+      <View style={[purchaseStyles.step, step >= 2 && purchaseStyles.stepActive]}>
         <Text style={[
           purchaseStyles.stepText, 
           step >= 2 && purchaseStyles.stepTextActive,
@@ -57,7 +57,7 @@ export const PurchaseStepper = ({ step, theme }: { step: number; theme: any }) =
         ]}>3</Text>
         <Text style={[
           purchaseStyles.stepLabel, 
-          step >= 3 && purchaseStyles.stepLabelActive,
+          step >= 2 && purchaseStyles.stepLabelActive,
           { color: step >= 3 ? theme.colors.primary : theme.colors.onSurfaceVariant }
         ]}>Confirmation</Text>
       </View>
