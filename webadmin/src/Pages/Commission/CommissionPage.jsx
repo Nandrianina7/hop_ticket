@@ -4,13 +4,20 @@ import api from '../../api/api';
 
 const CommissionPage = () => {
   const [tickets, setTickets] = useState([]);
-  const fetchAllTicket = async () => {
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const fetchAllTicket = async (page, rowsPerPage) => {
     try {
-      const response = await api.get('/api/commission_history/', { withCredentials: true });
+
+      const response = await api.get(
+        `/api/commission_history/?page=${page + 1}&limit=${rowsPerPage}`, 
+        { withCredentials: true }
+      );
       if (!response.data) {
         console.log('No response found from server');
         return;
       }
+      setTotalCount(response.data.total);
       const tickets = response.data.data;
       console.log('constumer fetched successfully', tickets);
       if (Array.isArray(tickets)) {
@@ -21,6 +28,8 @@ const CommissionPage = () => {
     } catch (error) {
       const errorMess = error instanceof Error ? error.message : 'Unknown error';
       console.log(`Server error -> ${errorMess}`);
+    } finally {
+      setLoading(false)
     }
   };
   const getSelectedEvent = async (id) => {
@@ -54,11 +63,15 @@ const CommissionPage = () => {
       console.log(`Server error -> ${errorMess}`);
     }
   };
-  useEffect(() => {
-    fetchAllTicket();
-  }, []);
   return (
-    <Commission tickets={tickets} getEventInfo={getSelectedEvent} getUserInfo={getCustomerInfo} />
+    <Commission 
+      tickets={tickets} 
+      getEventInfo={getSelectedEvent} 
+      getUserInfo={getCustomerInfo} 
+      fetchTickets={fetchAllTicket}
+      totalCount={totalCount}
+      loading={loading}
+    />
   );
 };
 
