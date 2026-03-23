@@ -865,26 +865,37 @@ class FoodItemListCreateView(APIView):
         print(serializer.errors)
         return Response(serializer.errors, status=400)
 
-
+from django.core.paginator import Paginator
 class CommissionHistoryView(APIView):
     def get(self, request):
         user_email = request.user
         user = Admin.objects.get(email=user_email)
 
-        if not user.is_superuser:
-           tickets = Ticket.objects.filter(event__organizer=user)
-        tickets = Ticket.objects.all()
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 10))
 
-        totals = tickets.aaggregate(
-           total_owner=Sum('owner_earnings'),
-           total_organizer=Sum('organizer_earnings')
+        if not user.is_superuser:
+            tickets = Ticket.objects.filter(event__organizer=user)
+        else:
+            tickets = Ticket.objects.all()
+
+        paginator = Paginator(tickets.order_by('-purchase_date'), limit)
+        current_page = paginator.get_page(page)
+
+        serializer = CommissionSerializer(current_page.object_list, many=True)
+
+        totals = tickets.aggregate(
+            total_owner=Sum('owner_earnings'),
+            total_organizer=Sum('organizer_earnings')
         )
-        serializer = CommissionSerializer(tickets, many=True)
-        
+
         return Response({
-           'data': serializer.data,
-           'success': True,
-           'message': 'Successfully loaded',
+            'data': serializer.data,
+            'total': paginator.count,
+            'total_owner': totals['total_owner'] or 0,
+            'total_organizer': totals['total_organizer'] or 0,
+            'success': True,
+            'message': 'Successfully loaded',
         }, status=status.HTTP_200_OK)
         
 
