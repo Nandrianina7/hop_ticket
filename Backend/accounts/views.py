@@ -245,6 +245,23 @@ class CustomizerListView(APIView):
         serializer = CustomizerSerializer(customizers, many=True)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
+
+class CustomerInfoView(APIView):
+    def get(self, request, pk):
+        if not pk:
+            return Response({
+                'message': 'No customer was selected', 
+                'success': False
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        customer = Customer.objects.get(id=pk)
+        serializer = CustomizerSerializer(customer)
+        return Response({
+            'status': True,
+            'message': 'Successfully loaded',
+            'data': serializer.data
+        })
+    
+
 # mobile
 class CustomerRegisterView(APIView):
     def post(self, request):

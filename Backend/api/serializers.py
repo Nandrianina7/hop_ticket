@@ -358,3 +358,27 @@ class FoodItemCreateSerializer(serializers.ModelSerializer):
         validated_data["is_available"] = validated_data.get("stock", 0) > 0
         validated_data["created_by"] = request.user
         return super().create(validated_data)
+
+
+class CommissionSerializer(serializers.ModelSerializer):
+    event_name = serializers.CharField(source='event.name')
+    tier = serializers.CharField(source='price_tier.tier_type', default=None, read_only=True)
+    event_id = serializers.IntegerField(source='event.id', read_only=True)
+    customer_email = serializers.CharField(source='customer.email', read_only=True)
+    customer_name = serializers.CharField(source='customer.first_name', read_only=True)
+    customer_id = serializers.IntegerField(source='customer.id', read_only=True)
+    class Meta:
+        model = models.Ticket
+        fields = [
+            'id',
+            'event_name',
+            'tier',
+            'price',
+            'owner_earnings',
+            'organizer_earnings',
+            'purchase_date',
+            'customer_email',
+            'customer_name',
+            'customer_id',
+            'event_id'
+        ]

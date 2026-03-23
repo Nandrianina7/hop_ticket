@@ -48,6 +48,7 @@ from .serializers import (
    PriceSerializer, 
    ViewEventLocationSerializer,
    FoodItemCreateSerializer,
+   CommissionSerializer,
 )
 from django.utils import timezone
 from rest_framework.generics import RetrieveAPIView
@@ -865,7 +866,39 @@ class FoodItemListCreateView(APIView):
         return Response(serializer.errors, status=400)
 
 
+class CommissionHistoryView(APIView):
+    def get(self, request):
+        user_email = request.user
+        user = Admin.objects.get(email=user_email)
 
+        if not user.is_superuser:
+           tickets = Ticket.objects.filter(event__organizer=user)
+        tickets = Ticket.objects.all()
+
+        totals = tickets.aaggregate(
+           total_owner=Sum('owner_earnings'),
+           total_organizer=Sum('organizer_earnings')
+        )
+        serializer = CommissionSerializer(tickets, many=True)
+        
+        return Response({
+           'data': serializer.data,
+           'success': True,
+           'message': 'Successfully loaded',
+        }, status=status.HTTP_200_OK)
+        
+
+class EventInfo(APIView):
+   def get(self, request, pk):
+      if not pk:
+         return Response({'message': 'No selected event', 'success': False})
+      event = Event.objects.get(id=pk)
+      serializer = EventSerializer(event)
+      return Response({
+         'message': 'Successfully loaded',
+         'success': True,
+         'data': serializer.data
+      })
 # mobile
 class EventListView(APIView):
     authentication_classes = [UUIDAuthentication]
