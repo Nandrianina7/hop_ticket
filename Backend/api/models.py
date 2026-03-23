@@ -201,7 +201,17 @@ class Ticket(models.Model):
         related_name='tickets'
     )
     is_used = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
+    owner_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    organizer_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    price_tier = models.ForeignKey(
+        PriceTier,
+        on_delete=models.CASCADE,
+        related_name="tickets",
+        null=True
+    )
     def is_expired(self):
         return timezone.now() > self.event.date
 

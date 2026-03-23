@@ -1050,13 +1050,23 @@ class BuyTicketView(APIView):
 
                 # Create tickets
                 tickets = []
+                price = float(tier.price)
+                percent = event.owner_percentage
+
+                owner_earning = price * (percent / 100)
+                organizer_earning = price - owner_earning
+
                 for i in range(quantity):
                     ticket = Ticket.objects.create(
                         admin=None,
                         customer=request.user,
                         event=event,
                         ticket_number=next_ticket_number + i,
-                        seat_id=seat_id
+                        seat_id=seat_id,
+                        price=price,
+                        owner_earnings=owner_earning,
+                        organizer_earnings=organizer_earning,
+                        price_tier=tier
                     )
                     tickets.append(ticket)
 
