@@ -79,11 +79,11 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
       result = result.filter((event) => event.status === stateFilter);
     }
     return result;
-  }, [data, activeFilter, searchTerm, stateFilter])
+  }, [data, activeFilter, searchTerm, stateFilter]);
 
   const pendingtrStatus = data.filter((event) => event.status === 'pending');
   const approvedStatus = data.filter((event) => event.status === 'approved');
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % meassage.length);
@@ -124,7 +124,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
               }}
             >
               <Box
-                component='button'
+                component="button"
                 sx={{
                   px: 2,
                   py: 1,
@@ -135,7 +135,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
                   gap: 1,
                   minWidth: 110,
                   cursor: 'pointer',
-                  border: 'none'
+                  border: 'none',
                 }}
                 onClick={() => setStateFilter('pending')}
               >
@@ -151,7 +151,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
               </Box>
 
               <Box
-                component='button'
+                component="button"
                 sx={{
                   px: 2,
                   py: 1,
@@ -162,7 +162,7 @@ const Acceuil = ({ email, onCreate, onUpdate, data, loading, onDelete, onSaveCha
                   gap: 1,
                   minWidth: 110,
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
                 }}
                 onClick={() => setStateFilter('approved')}
               >

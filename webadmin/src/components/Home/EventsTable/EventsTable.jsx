@@ -269,7 +269,7 @@ const EventsTable = ({
                 <Box sx={{ position: 'absolute', top: 16, right: 16 }}>{getStatusChip(item)}</Box>
                 <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
                   <Chip
-                    label={item.status === 'pending' ? 'En attente': 'Approuvé'}
+                    label={item.status === 'pending' ? 'En attente' : 'Approuvé'}
                     color={item.status === 'pending' ? 'error' : 'secondary'}
                     size="small"
                     sx={{
