@@ -664,23 +664,25 @@ class VenuePlanInsertView(APIView):
 
 
 class EventSiteView(APIView):
-   permission_classes = [IsAuthenticated]
-   def get(self, request):
-     try:
-        user_email = str(request.user)
-        user = Admin.objects.get(email=user_email)
-        if user.is_superuser or user.is_staff:
-          eventSite = EventPlan.objects.all()
-        else:
-          eventSite = EventSite.objects.filter(organizer=user.id)
-        serializer2=EventSiteSerializer(eventSite, many=True)
-        # serializer = EventPlanSerializer(plans, many=True)
-        return Response({'data': serializer2.data}, status=status.HTTP_200_OK)
-     except Admin.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-     except Exception as e:
-        print('error', str(e))
-        return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            user_email = str(request.user)
+            print('User', user_email)
+            user = Admin.objects.get(email=user_email)
+            if user.is_superuser or user.is_staff:
+                eventSite = EventSite.objects.all()
+            else:
+                eventSite = EventSite.objects.filter(organizer=user.id)
+
+            serializer=EventSiteSerializer(eventSite, many=True)
+
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        except Admin.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print('error', str(e))
+            return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class EventPlanNewInsertion(APIView):
    def post(self, request):
@@ -707,6 +709,34 @@ class EventPlanNewInsertion(APIView):
       except Exception as e:
          print(str(e))
          return Response({"error": "Failed to save venue, server error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UpdateEventSiteOwnerView(APIView):    
+    def put(self, request, pk):
+       user_email = request.user
+
+       selected_organizer = request.data.get('org_id')
+     
+       user = Admin.objects.get(email=user_email)
+
+       if not user.is_superuser:
+          return Response({
+             'success': False,
+             'message': 'Action refused: user not authorized'
+          }, status=status.HTTP_401_UNAUTHORIZED)
+       
+       organizer = get_object_or_404(Admin, id=selected_organizer)
+       event_site = EventSite.objects.get(id=pk)
+
+       event_site.organizer = organizer
+
+       event_site.save()
+       serializer = EventSiteSerializer(event_site)
+       return Response({
+          'data': serializer.data,
+          'message': 'Plan de la site est a jour',
+          'success': True
+       }, status=status.HTTP_200_OK)
+    
 
 class SelectedOragnizerEventPlanView(APIView):
    def get(self, request, org_id):
@@ -875,19 +905,19 @@ class CommissionHistoryView(APIView):
         limit = int(request.GET.get('limit', 10))
 
         if not user.is_superuser:
-            tickets = Ticket.objects.filter(event__organizer=user)
+            base_query_set = Ticket.objects.filter(event__organizer=user)
         else:
-            tickets = Ticket.objects.all()
+            base_query_set = Ticket.objects.all()
 
-        paginator = Paginator(tickets.order_by('-purchase_date'), limit)
-        current_page = paginator.get_page(page)
+        with transaction.atomic():
+            totals = base_query_set.aggregate(
+                total_owner=Sum('owner_earnings'),
+                total_organizer=Sum('organizer_earnings')
+                )
+            paginator = Paginator(base_query_set.order_by('-purchase_date'), limit)
+            current_page = paginator.get_page(page)
 
         serializer = CommissionSerializer(current_page.object_list, many=True)
-
-        totals = tickets.aggregate(
-            total_owner=Sum('owner_earnings'),
-            total_organizer=Sum('organizer_earnings')
-        )
 
         return Response({
             'data': serializer.data,

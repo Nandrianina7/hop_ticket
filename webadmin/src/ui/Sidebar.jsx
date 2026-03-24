@@ -47,7 +47,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
         { text: 'Salles', path: '/cinema/halls', icon: <House /> },
       ],
     },
-    { icon: <MapOutlined />, path: '/event-layout', text: 'Plan' },
+    { icon: <MapOutlined />, path: '/plan', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
     { icon: <Money />, path: '/commission', text: 'Commission' },
   ];

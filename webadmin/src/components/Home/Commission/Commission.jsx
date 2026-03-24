@@ -16,13 +16,15 @@ import { useState, useEffect } from 'react';
 import EventInfo from './EventInfo';
 import UserDialog from './UserDialog';
 
-const Commission = ({ 
-  tickets = [], 
-  getEventInfo, 
+const Commission = ({
+  tickets = [],
+  getEventInfo,
   getUserInfo,
-  fetchTickets, 
+  fetchTickets,
   totalCount = 0,
-  loading = false
+  loading = false,
+  organizerEarn = 0,
+  ownerEarn = 0,
 }) => {
   const totalOwner = tickets.reduce((acc, t) => acc + parseFloat(t.owner_earnings), 0);
   const totalOrganizer = tickets.reduce((acc, t) => acc + parseFloat(t.organizer_earnings), 0);
@@ -32,7 +34,7 @@ const Commission = ({
   const [userAnchor, setUserAnchor] = useState(null);
   const openCustoInfo = Boolean(userAnchor);
   const [customer, setCustomer] = useState(null);
-  
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -86,7 +88,7 @@ const Commission = ({
             Gain de l'application
           </Typography>
           <Typography variant="h6" fontWeight="bold" color="error">
-            {totalOwner.toFixed(2)} MGA
+            {ownerEarn.toFixed(2)} MGA
           </Typography>
         </Paper>
         <Paper sx={{ p: 2, flex: 1, textAlign: 'center' }} elevation={2}>
@@ -94,7 +96,7 @@ const Commission = ({
             Gain des organisateurs
           </Typography>
           <Typography variant="h6" fontWeight="bold" color="success.main">
-            {totalOrganizer.toFixed(2)} MGA
+            {organizerEarn.toFixed(2)} MGA
           </Typography>
         </Paper>
       </Stack>

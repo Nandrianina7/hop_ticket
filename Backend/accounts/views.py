@@ -260,8 +260,28 @@ class CustomerInfoView(APIView):
             'message': 'Successfully loaded',
             'data': serializer.data
         })
-    
 
+class EventOrganizerListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user_email = request.user
+        user = Admin.objects.get(email=user_email)
+
+        if not user.is_superuser:
+            return Response({
+                'success': True,
+                'message': 'User not permetted to perform this action'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        org_list = Admin.objects.filter(role='event_organizer')
+        serializer = AdminSerialiser(org_list, many=True)
+        return Response({
+            'data': serializer.data,
+            'success': True,
+            'message': 'Successfully loaded'
+        }, status=status.HTTP_200_OK)
+    
+    
 # mobile
 class CustomerRegisterView(APIView):
     def post(self, request):
