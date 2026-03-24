@@ -5,6 +5,8 @@ import '@mezh-hq/react-seat-toolkit/styles';
 import api from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import SeatingEditor from '../SeatingEditor.jsx';
+import { getCookie } from '../../utils/getCookie.js';
+import OrganizerListDialog from './OrganizerListDialog.jsx';
 
 const EventLayoutListingComponent = () => {
   const navigate = useNavigate();
@@ -56,7 +58,7 @@ const EventLayoutListingComponent = () => {
     scale: 1,
   });
   const [siteName, setSiteName] = React.useState(null);
-
+  const [open, setOpen] = React.useState(false);
   async function fetchEventSites() {
     setLoading(true);
     try {
@@ -70,6 +72,7 @@ const EventLayoutListingComponent = () => {
       setLoading(false);
     }
   }
+  const user = getCookie('user_role');
 
   async function saveEvent(data) {
     try {
@@ -239,6 +242,7 @@ const EventLayoutListingComponent = () => {
           mb: 2,
         }}
       >
+        {user === 'admin' && <Button onClick={() => setOpen(true)}>Regle pour</Button>}
         <Button variant="contained" color="primary" onClick={() => navigate('/event-layout')}>
           Crée nouveau plan de salle
         </Button>
@@ -269,8 +273,8 @@ const EventLayoutListingComponent = () => {
 
       {selectedSite && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          plan de salle pour: <strong>{selectedSite.site_name}</strong>
-          {eventPlan?.length > 0 && <span> — {eventPlan.length} plan(s) trouvé(e)</span>}
+          plan de salle pour: 
+          {' '}<strong>{selectedSite.site_name} Appartien a {selectedSite.organizer_name}</strong>
         </Typography>
       )}
 
@@ -305,6 +309,7 @@ const EventLayoutListingComponent = () => {
           />
         </Box>
       </Box>
+      <OrganizerListDialog open={open} onClose={() => setOpen(false)} selected_site={selectedSite && selectedSite.id}/>
     </Box>
   );
 };

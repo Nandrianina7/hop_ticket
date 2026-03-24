@@ -22,6 +22,7 @@ urlpatterns = [
   path('event_organizer/signup/', EventOrganizerRegisterView.as_view(), name='organizer_signup'),
   path('all_organizers/', AllOrganisatorView.as_view(), name='list_organizators'),
   path('customer_info/<int:pk>/', views.CustomerInfoView.as_view(), name='custoemr_info'),
+  path('org_lst/', views.EventOrganizerListView.as_view(), name='organizer_list'),
   
   # mobile urls
   path('mobile/register/', CustomerRegisterView.as_view(), name='customer-register'),

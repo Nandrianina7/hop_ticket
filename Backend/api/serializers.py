@@ -290,9 +290,10 @@ class EVentLocationSerializer(serializers.ModelSerializer):
         fields = ["id", "event", "location_name", "longitude", "latitude"]
         read_only_fields = ["id"]
 class EventSiteSerializer(serializers.ModelSerializer):
+    organizer_name = serializers.CharField(source='organizer.full_name', read_only=True)
     class Meta:
         model = models.EventSite
-        fields = ["id","site_name","organizer"]
+        fields = ["id","site_name","organizer", "organizer_name"]
         read_only_fields = ["id"]
 
 class EventPlanSerializer(serializers.ModelSerializer):

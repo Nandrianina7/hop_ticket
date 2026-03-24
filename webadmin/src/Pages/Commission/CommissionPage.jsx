@@ -6,11 +6,12 @@ const CommissionPage = () => {
   const [tickets, setTickets] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [totalOrganizerEarn, setOrganizerEarn] = useState(0);
+  const [totalOwnerEarn, setTotalOwnerEarn] = useState(0);
   const fetchAllTicket = async (page, rowsPerPage) => {
     try {
-
       const response = await api.get(
-        `/api/commission_history/?page=${page + 1}&limit=${rowsPerPage}`, 
+        `/api/commission_history/?page=${page + 1}&limit=${rowsPerPage}`,
         { withCredentials: true }
       );
       if (!response.data) {
@@ -18,6 +19,8 @@ const CommissionPage = () => {
         return;
       }
       setTotalCount(response.data.total);
+      setOrganizerEarn(response.data.total_organizer);
+      setTotalOwnerEarn(response.data.total_owner);
       const tickets = response.data.data;
       console.log('constumer fetched successfully', tickets);
       if (Array.isArray(tickets)) {
@@ -29,7 +32,7 @@ const CommissionPage = () => {
       const errorMess = error instanceof Error ? error.message : 'Unknown error';
       console.log(`Server error -> ${errorMess}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
   const getSelectedEvent = async (id) => {
@@ -64,13 +67,15 @@ const CommissionPage = () => {
     }
   };
   return (
-    <Commission 
-      tickets={tickets} 
-      getEventInfo={getSelectedEvent} 
-      getUserInfo={getCustomerInfo} 
+    <Commission
+      tickets={tickets}
+      getEventInfo={getSelectedEvent}
+      getUserInfo={getCustomerInfo}
       fetchTickets={fetchAllTicket}
       totalCount={totalCount}
       loading={loading}
+      organizerEarn={totalOrganizerEarn}
+      ownerEarn={totalOwnerEarn}
     />
   );
 };
