@@ -186,7 +186,7 @@ const PlanView = ({ org_id }) => {
           console.log('Setting event plan with', planData.data.length, 'items');
           setEventPlan(planData.data);
 
-          const latestPlan = planData.data[planData.data.length - 1];
+           const latestPlan = planData.data[planData.data.length - 1];
           console.log('Latest plan:', latestPlan);
           console.log('Latest plan metadata:', latestPlan.metadata);
 
@@ -213,7 +213,23 @@ const PlanView = ({ org_id }) => {
       setEventPlan([]);
     }
   };
+  const sections = layout?.sections || [];
+  const legendItems = React.useMemo(() => {
+  if (!layout?.sections) return [];
 
+  const unique = {};
+  
+  sections.forEach((section) => {
+    if (!unique[section.type]) {
+      unique[section.name] = {
+        name: section.name,
+        color: section.color,
+        };
+      }
+    });
+
+    return Object.values(unique);
+  }, [layout]);
   React.useEffect(() => {
     if (org_id) {
       fetchEventSites();

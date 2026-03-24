@@ -1,6 +1,5 @@
 import React from 'react';
 import { Tabs, Tab, Box, Paper, Typography, Button } from '@mui/material';
-import SeatToolkit from '@mezh-hq/react-seat-toolkit';
 import '@mezh-hq/react-seat-toolkit/styles';
 import api from '../../api/api';
 import { useNavigate } from 'react-router-dom';
@@ -187,7 +186,25 @@ const EventLayoutListingComponent = () => {
       console.log(error);
     }
   };
-  // ... (rest of the component JSX, which is correct)
+    const sections = layout?.sections || [];
+    const legendItems = React.useMemo(() => {
+    if (!layout?.sections) return [];
+  
+    const unique = {};
+    
+    sections.forEach((section) => {
+      if (!unique[section.type]) {
+        unique[section.tier] = {
+          tier: section.tier,
+          name: section.name,
+          color: section.color,
+          place: section.seats.length,
+          };
+        }
+      });
+  
+      return Object.values(unique);
+    }, [layout]);
   if (!loading && eventSite.length === 0) {
     return (
       <Box
@@ -242,7 +259,7 @@ const EventLayoutListingComponent = () => {
           mb: 2,
         }}
       >
-        {user === 'admin' && <Button onClick={() => setOpen(true)}>Regle pour</Button>}
+        {user === 'admin' && <Button onClick={() => setOpen(true)} variant='outlined' >Regle pour</Button>}
         <Button variant="contained" color="primary" onClick={() => navigate('/event-layout')}>
           Crée nouveau plan de salle
         </Button>
@@ -278,7 +295,39 @@ const EventLayoutListingComponent = () => {
         </Typography>
       )}
 
-      {/* ✅ 2. VIEWPORT CONTAINER */}
+      {legendItems.length > 0 && (
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+            Légende
+          </Typography>
+      
+          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            {legendItems.map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    backgroundColor: item.color,
+                    borderRadius: '3px',
+                    border: '1px solid #ccc',
+                  }}
+                />
+                <Typography variant="body2">
+                  {item.name} {item.tier} ({`${item.place} pl`})
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      )}
       <Box
         sx={{
           flex: 1, // Fill remaining vertical space
@@ -288,6 +337,7 @@ const EventLayoutListingComponent = () => {
           position: 'relative',
         }}
       >
+
         <Box
           sx={{
             minWidth: '1500px', // Must be wider than screen to scroll X
