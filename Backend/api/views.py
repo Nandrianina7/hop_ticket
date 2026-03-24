@@ -757,28 +757,35 @@ class SelectedOragnizerEventPlanView(APIView):
         return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class EventPlanView(APIView):
-   permission_classes = [IsAuthenticated]
-   def get(self, request,site_name):
-     try:
-        user_email = str(request.user)
-        user = Admin.objects.get(email=user_email)
+    permission_classes = [IsAuthenticated]
+    def get(self, request, site_name):
+        try:
+            user_email = str(request.user)
+            user = Admin.objects.get(email=user_email)
 
-        if user.is_superuser or user.is_staff:
-          plans = EventPlan.objects.all()
-        else:
-          print({})
-          eventSite = EventSite.objects.get(organizer=user.id,site_name=site_name)
-          plans = EventPlan.objects.filter(site=eventSite)
-          # serializer2=EventPlanSerializer(eventSite)
-        serializer = EventPlanSerializer(plans, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
-     except Admin.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-     except Exception as e:
-        print('error', str(e))
-        return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            try:
+                event_site = EventSite.objects.get(site_name=site_name)
+            except EventSite.DoesNotExist:
+                return Response({'error': 'Event site not found'}, status=status.HTTP_404_NOT_FOUND)
 
-   def post(self, request):
+            if user.is_superuser or user.is_staff:
+                plans = EventPlan.objects.filter(site=event_site)
+            else:
+                if event_site.organizer.id != user.id:
+                    return Response({'error': 'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)
+                plans = EventPlan.objects.filter(site=event_site)
+                
+            serializer = EventPlanSerializer(plans, many=True)
+            print('received data', serializer.data)
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+            
+        except Admin.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print('error', str(e))
+            return Response({'error': 'Server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request):
       try:
         organizer = Admin.objects.get(email=request.user)
         data = request.data.copy()
