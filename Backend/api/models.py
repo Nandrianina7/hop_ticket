@@ -77,7 +77,7 @@ class Event(models.Model):
     )
     average_rating = models.FloatField(default=0.0)
     total_ratings = models.PositiveIntegerField(default=0)
-    organizer = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='event', default=1)
+    organizer = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='event')
 
     base_ticket_price = models.FloatField(default=10.0)
 

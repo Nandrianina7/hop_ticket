@@ -178,7 +178,7 @@ def add_addEvent(request):
         {"message": "All fields are required"},
         status=status.HTTP_400_BAD_REQUEST
       )
-
+    print('usere', admin.id)
     data = {
       "name": name,
       "date": date,
@@ -196,7 +196,7 @@ def add_addEvent(request):
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     event = serializer.save(tickets_sold=0)
-
+    print('saved', event)
     return Response({
       "message": "Event created successfully",
       "event": serializer.data

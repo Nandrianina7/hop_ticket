@@ -140,7 +140,7 @@ class EventSerializer(serializers.ModelSerializer):
         model = models.Event
         fields = [
             'id', 'name', 'date', 'venue', 'description', 'tickets_sold', 'image',
-            'price_tiers', 'image_url', 'location_name', 'owner_percentage', 'status'
+            'price_tiers', 'image_url', 'location_name', 'owner_percentage', 'status', 'organizer'
         ]
 
     def get_location_name(self, obj):
