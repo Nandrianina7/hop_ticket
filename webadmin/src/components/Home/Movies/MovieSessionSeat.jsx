@@ -31,6 +31,8 @@ import {
   Living,
 } from '@mui/icons-material';
 import PromocodeForm from '../Promocode/PromocodeForm';
+import api from '../../../api/api';
+import TicketInfo from './TicketInfo';
 
 const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) => {
   const theme = useTheme();
@@ -38,13 +40,30 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
   const [maxRow, setMaxRow] = useState(0);
   const [maxCol, setMaxCol] = useState(0);
   const [fullData, setFullData] = useState();
+  const [ticketInfo, setTicketInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const now = new Date();
-
+  const [openInfo, setOpenInfo] = useState(false);
+  const [ticketId, setTicketId] = useState(null);
   const getTwoDayB = (sessionStart) => {
     const _2_days_b = new Date(new Date(sessionStart).getTime() - 2 * 24 * 60 * 1000);
 
     return _2_days_b;
+  };
+
+  const fetchTicket = async (ticket_id) => {
+    try {
+      const response = await api.get(`/cinema/ticket/${ticket_id}/`, { withCredentials: true });
+      if (!response.data) {
+        console.log('failed to load data');
+        return;
+      }
+      const data = response.data.data;
+      console.log('data loaded', data);
+      setTicketInfo(data);
+    } catch (error) {
+      console.log('error', error);
+    }
   };
   // Seat statistics
   const seatStats = {
@@ -83,7 +102,7 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
       },
     };
   };
-
+  const handleClickInfo = (e) => {};
   useEffect(() => {
     if (session && open) {
       setIsLoading(true);
@@ -115,7 +134,11 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
         });
     }
   }, [session, open, fetchSeats]);
-
+  useEffect(() => {
+    if (openInfo && ticketId) {
+      fetchTicket(ticketId);
+    }
+  }, [openInfo, ticketId]);
   const seatsByRow = {};
   seats.forEach((seat) => {
     const rowNum = parseInt(seat.rows, 10);
@@ -277,7 +300,7 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
                               Row {seat.rows}, Seat {seat.cols}
                             </Typography>
                             <Typography variant="body2" sx={{ mt: 0.5 }}>
-                              Price: {seat.calculated_price || 0}MGA
+                              Price: {seat.calculated_price || 0} MGA
                             </Typography>
                             <Chip
                               label={
@@ -305,6 +328,20 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
                               }
                               sx={{ mt: 1 }}
                             />
+                            {!seat.is_available && !seat.is_disabled && (
+                              <Chip
+                                component={'button'}
+                                label="Ticket info"
+                                color="primary"
+                                size="small"
+                                sx={{ mt: 1, cursor: 'pointer', ml: 1 }}
+                                clickable
+                                onClick={() => {
+                                  setOpenInfo(true);
+                                  setTicketId(seat.ticket_id);
+                                }}
+                              />
+                            )}
                           </Box>
                         }
                         arrow
@@ -552,6 +589,7 @@ const MovieSessionSeat = ({ fetchSeats, session, open, onClose, onSavePCode }) =
           </Box>
         </Box>
       </Box>
+      <TicketInfo open={openInfo} onClick={() => setOpenInfo(false)} ticket={ticketInfo} />
     </Drawer>
   );
 };

@@ -29,6 +29,7 @@ from .serializers import (
     EventFeedSerializer,
     MovieFeedSerializer,
     RestaurantItemCategorySerializer,
+    TicketCommandSerializer,
 )
 from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
@@ -815,6 +816,7 @@ class SessionSeatsWebView(APIView):
             # Créer un set des positions de sièges déjà pris
             taken_seat_positions = set()
             reserved_seat_positions = set()
+            seat_ticket_map = {}  # Dictionary to map seat_id to ticket object
             
             for ticket in existing_tickets:
                 # Vérifier si la réservation est expirée
@@ -824,6 +826,9 @@ class SessionSeatsWebView(APIView):
                 # Construire l'ID composite du siège
                 seat_id = f"{ticket.seat_id}-{ticket.row}-{ticket.col}"
                 taken_seat_positions.add(seat_id)
+
+                # Store ticket in the map
+                seat_ticket_map[seat_id] = ticket
                 
                 # Marquer les sièges réservés spécifiquement
                 if ticket.status == 'reserved':
@@ -841,6 +846,7 @@ class SessionSeatsWebView(APIView):
                         # Check if seat is taken using the set for faster lookup
                         is_taken = seat_id in taken_seat_positions
                         is_reserved = seat_id in reserved_seat_positions
+                        ticket_obj = seat_ticket_map.get(seat_id)
                         
                         # Check if seat is disabled
                         disabled_seats = seat_config.disabledSeats or []
@@ -873,7 +879,8 @@ class SessionSeatsWebView(APIView):
                             'is_available': is_available,
                             'is_vip': is_vip,
                             'is_disabled': disabled,
-                            'is_reserved': is_reserved  # Nouveau champ pour les sièges réservés
+                            'is_reserved': is_reserved,
+                            'ticket_id': ticket_obj.id if ticket_obj else None,  # Now correctly gets the ticket ID
                         })
             
             return Response({
@@ -889,8 +896,7 @@ class SessionSeatsWebView(APIView):
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        
+            )      
 
 class PromoCodeCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -995,7 +1001,19 @@ class PromoCodeCreateWithMovieView(APIView):
             )
         
 
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
+
+class TicketCommandsView(APIView):
+    def get(self, request, pk):
+        ticket = get_object_or_404(Ticket, pk=pk)
+        serializer = TicketCommandSerializer(ticket)
+    
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
     # mobile -----------------------------------------------------------------------------------------------------------------
 
 
