@@ -16,7 +16,7 @@ const DashboardPage = () => {
     severity: '',
     message: '',
   });
-
+  const [movies, setMovies] = useState([]);
   const showSnackbar = (message, severity = 'success') => {
     setSnackBar({ open: true, severity, message });
   };
@@ -127,10 +127,28 @@ const DashboardPage = () => {
       console.log('Error', Error(error).message);
     }
   };
+
+  const fetchAllMovies = async () => {
+    try {
+      const res = await api.get('/cinema/movie_list/', { withCredentials: true });
+
+      if (!res.data) {
+        console.log('No data loaded form server');
+        return;
+      }
+
+      const data = res.data.data;
+      setMovies(data);
+    } catch (error) {
+      const errMess = error instanceof Error ? error.message : 'Unknown error';
+      console.log('message', errMess);
+    }
+  };
   useEffect(() => {
     const initilizeData = async () => {
       await fetchEventData();
       await fetchAllCustomers();
+      fetchAllMovies();
     };
     initilizeData();
   }, []);
@@ -142,6 +160,7 @@ const DashboardPage = () => {
         allCustomers={allCustomers}
         onCreate={onCreate}
         onSaveVenue={saveVenue}
+        movies={movies}
       />
       <EventInfo
         open={open}

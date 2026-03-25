@@ -96,7 +96,7 @@ const Commission = ({
             Gain des organisateurs
           </Typography>
           <Typography variant="h6" fontWeight="bold" color="success.main">
-            {organizerEarnww.toFixed(2)} MGA
+            {organizerEarn.toFixed(2)} MGA
           </Typography>
         </Paper>
       </Stack>

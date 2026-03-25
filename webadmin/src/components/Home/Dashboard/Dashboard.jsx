@@ -30,6 +30,7 @@ import {
   ImportExport,
   TimelapseOutlined,
   Event,
+  Movie,
 } from '@mui/icons-material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import {
@@ -56,7 +57,7 @@ const getDashboardStats = (data = [], allCustomers = []) => ({
   revenueTrend: 'none',
 });
 
-const Dashboard = ({ data, allCustomers, onCreate, onSaveVenue }) => {
+const Dashboard = ({ data, allCustomers, onCreate, onSaveVenue, movies = [] }) => {
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
@@ -75,6 +76,11 @@ const Dashboard = ({ data, allCustomers, onCreate, onSaveVenue }) => {
       value: stats.totalEvents,
       icon: <Event />,
       trend: stats.eventsTrend,
+    },
+    {
+      title: 'Total des films',
+      value: movies.length,
+      icon: <Movie />,
     },
     {
       title: 'total de clients',
@@ -180,7 +186,7 @@ const Dashboard = ({ data, allCustomers, onCreate, onSaveVenue }) => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' },
           gap: 3,
           mb: 3,
         }}
