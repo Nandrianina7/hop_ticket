@@ -44,7 +44,6 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
     { icon: <MapOutlined />, path: '/plan', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
     { icon: <Money />, path: '/commission', text: 'Commission' },
-    { icon: <PeopleAlt />, path: '/users', text: 'Utilisateurs' },
   ];
 
   const itemsForOrganizer = [
