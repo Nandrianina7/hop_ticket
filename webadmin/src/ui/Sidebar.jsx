@@ -18,6 +18,7 @@ import {
   LocationCity,
   MapOutlined,
   Money,
+  PeopleAlt,
 } from '@mui/icons-material';
 import { Avatar, Box, Divider, IconButton, Typography, useTheme } from '@mui/material';
 import { useLocation, NavLink as RouterNavLink } from 'react-router-dom';
@@ -43,6 +44,7 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
     { icon: <MapOutlined />, path: '/plan', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
     { icon: <Money />, path: '/commission', text: 'Commission' },
+    { icon: <PeopleAlt />, path: '/users', text: 'Utilisateurs' },
   ];
 
   const itemsForOrganizer = [

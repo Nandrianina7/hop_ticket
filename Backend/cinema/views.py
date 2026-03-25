@@ -350,10 +350,16 @@ class MoviesListView(APIView):
                 movies = Movie.objects.filter(
                     Q(created_by_id=user.id) | Q(sessions__hall__cinema__organizer=user)
                 ).distinct()
-            else:
+            elif user.is_superuser:
                 movies = Movie.objects.all()
-
+            else:
+                return Response({
+                    'success': False,
+                    'message': 'This user is not authorzed to do this acton',
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
             serializer = MovieWithSessionSerializer(movies, many=True)
+            print('movies', serializer.data)
             return Response(
                 {"message": "Movies fetched successfully", "data": serializer.data},
                 status=status.HTTP_200_OK,
@@ -1014,6 +1020,7 @@ class TicketCommandsView(APIView):
             'success': True,
             'data': serializer.data
         })
+
     # mobile -----------------------------------------------------------------------------------------------------------------
 
 
