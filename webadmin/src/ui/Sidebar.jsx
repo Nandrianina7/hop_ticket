@@ -38,15 +38,8 @@ const Sidebar = ({ role = '', collapsed, setCollapsed }) => {
     { icon: <Dashboard />, text: 'Dashboard', path: '/home' },
     { icon: <Event />, text: 'Evenement', path: '/event' },
     { icon: <People />, text: 'Clients', path: '/constumers' },
-    {
-      icon: <TvOutlined />,
-      text: 'Cinema',
-      path: '/cinema',
-      children: [
-        { text: 'Films', path: '/cinema/movies', icon: <Movie /> },
-        { text: 'Salles', path: '/cinema/halls', icon: <House /> },
-      ],
-    },
+    { text: 'Films', path: '/cinema/movies', icon: <Movie /> },
+    { text: 'Salles', path: '/cinema/halls', icon: <House /> },
     { icon: <MapOutlined />, path: '/plan', text: 'Plan' },
     { icon: <History />, path: '/history', text: 'Organisateur' },
     { icon: <Money />, path: '/commission', text: 'Commission' },

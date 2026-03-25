@@ -135,14 +135,10 @@ const OrganizerListDialog = ({ open, onClose, selected_site }) => {
           />
         </Box>
         <DialogActions>
-          <Button onClick={onClose}>
-            Annuler
+          <Button onClick={onClose}>Annuler</Button>
+          <Button onClick={handleSubmit} disabled={!selectedOrganizer} variant="contained">
+            Regler
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!selectedOrganizer} 
-            variant='contained'
-          >Regler</Button>
         </DialogActions>
       </DialogContent>
     </Dialog>

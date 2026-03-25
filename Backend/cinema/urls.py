@@ -38,6 +38,7 @@ urlpatterns = [
   path('organizer/data/<int:organizerId>/', views.SelectedOrganizerMoviesView.as_view(), name='organizer mivie'), 
   path('organizer/cinema/list/<int:org_id>/', views.SelectedOrganizerCinemaView.as_view(), name='cinema_organizer_list'),
   path('organizer/cinema/halls', views.SelectedOrganizerHall.as_view(), name='organizer_halls'),
+  path('ticket/<int:pk>/', views.TicketCommandsView.as_view(), name='ticket_info'),
       # mobile app -----------------------
       
   path('movies/', views.MovieListView.as_view(), name='movie-list'),

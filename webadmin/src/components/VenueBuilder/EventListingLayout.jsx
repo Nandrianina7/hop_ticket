@@ -186,12 +186,12 @@ const EventLayoutListingComponent = () => {
       console.log(error);
     }
   };
-    const sections = layout?.sections || [];
-    const legendItems = React.useMemo(() => {
+  const sections = layout?.sections || [];
+  const legendItems = React.useMemo(() => {
     if (!layout?.sections) return [];
-  
+
     const unique = {};
-    
+
     sections.forEach((section) => {
       if (!unique[section.type]) {
         unique[section.tier] = {
@@ -199,12 +199,12 @@ const EventLayoutListingComponent = () => {
           name: section.name,
           color: section.color,
           place: section.seats.length,
-          };
-        }
-      });
-  
-      return Object.values(unique);
-    }, [layout]);
+        };
+      }
+    });
+
+    return Object.values(unique);
+  }, [layout]);
   if (!loading && eventSite.length === 0) {
     return (
       <Box
@@ -259,7 +259,11 @@ const EventLayoutListingComponent = () => {
           mb: 2,
         }}
       >
-        {user === 'admin' && <Button onClick={() => setOpen(true)} variant='outlined' >Regle pour</Button>}
+        {user === 'admin' && (
+          <Button onClick={() => setOpen(true)} variant="outlined">
+            Regle pour
+          </Button>
+        )}
         <Button variant="contained" color="primary" onClick={() => navigate('/event-layout')}>
           Crée nouveau plan de salle
         </Button>
@@ -290,8 +294,10 @@ const EventLayoutListingComponent = () => {
 
       {selectedSite && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          plan de salle pour: 
-          {' '}<strong>{selectedSite.site_name} Appartien a {selectedSite.organizer_name}</strong>
+          plan de salle pour:{' '}
+          <strong>
+            {selectedSite.site_name} Appartien a {selectedSite.organizer_name}
+          </strong>
         </Typography>
       )}
 
@@ -300,7 +306,7 @@ const EventLayoutListingComponent = () => {
           <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
             Légende
           </Typography>
-      
+
           <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
             {legendItems.map((item, index) => (
               <Box
@@ -337,7 +343,6 @@ const EventLayoutListingComponent = () => {
           position: 'relative',
         }}
       >
-
         <Box
           sx={{
             minWidth: '1500px', // Must be wider than screen to scroll X
@@ -359,7 +364,11 @@ const EventLayoutListingComponent = () => {
           />
         </Box>
       </Box>
-      <OrganizerListDialog open={open} onClose={() => setOpen(false)} selected_site={selectedSite && selectedSite.id}/>
+      <OrganizerListDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        selected_site={selectedSite && selectedSite.id}
+      />
     </Box>
   );
 };

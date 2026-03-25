@@ -483,3 +483,116 @@ class CalendarMovieSerializer(serializers.ModelSerializer):
             start_time__gte=timezone.now()
         ).order_by('start_time').first()
         return next_session.id if next_session else None
+
+from django.db import models
+class TicketCommandSerializer(serializers.ModelSerializer):
+    """
+    Serializer to get commands (food orders) from a ticket ID
+    """
+    # Ticket basic info
+    ticket_code = serializers.UUIDField(read_only=True)
+    seat = serializers.SerializerMethodField()
+    movie_title = serializers.CharField(source='session.movie.title', read_only=True)
+    movie_duration = serializers.CharField(source='session.movie.duration', read_only=True)
+    cinema_name = serializers.CharField(source='session.hall.cinema.name', read_only=True)
+    hall_name = serializers.CharField(source='session.hall.name', read_only=True)
+    show_time = serializers.DateTimeField(source='session.start_time', read_only=True)
+    show_date = serializers.SerializerMethodField()
+    show_time_only = serializers.SerializerMethodField()
+    
+    # Commands (food orders)
+    commands = serializers.SerializerMethodField()
+    total_commands_amount = serializers.SerializerMethodField()
+    customer_name = serializers.CharField(source='customer.first_name', read_only=True)
+    customer_id = serializers.IntegerField(source='customer.id', read_only=True)
+    customer_last_name = serializers.CharField(source='customer.last_name', read_only=True)
+    
+    class Meta:
+        model = Ticket
+        fields = [
+            'ticket_code',
+            'seat',
+            'movie_title',
+            'movie_duration',
+            'cinema_name',
+            'hall_name',
+            'show_time',
+            'show_date',
+            'show_time_only',
+            'commands',
+            'total_commands_amount',
+            'customer_id',
+            'customer_name',
+            'customer_last_name',
+            'status',
+            'price'
+        ]
+    
+    def get_seat(self, obj):
+        """Format seat number (e.g., A5, B12)"""
+        try:
+            if obj.row is not None and obj.col is not None:
+                row_letter = chr(65 + int(obj.row))  # 0=A, 1=B, etc.
+                seat_number = f"{row_letter}{int(obj.col) + 1}"
+                return seat_number
+        except (ValueError, TypeError):
+            pass
+        
+        # Fallback to seat object
+        if obj.seat:
+            return f"{obj.seat.rows}{obj.seat.cols}"
+        
+        return f"R{obj.row}C{obj.col}"
+    
+    def get_show_date(self, obj):
+        """Extract date from show time"""
+        return obj.session.start_time.strftime('%Y-%m-%d')
+    
+    def get_show_time_only(self, obj):
+        """Extract time from show time"""
+        return obj.session.start_time.strftime('%H:%M')
+    
+    def get_commands(self, obj):
+        """
+        Get all food orders (commands) from the reservation
+        """
+        if not obj.reservation:
+            return []
+        
+        commands_data = []
+        for food_order in obj.reservation.food_orders.all():
+            # Get items in this food order
+            items = []
+            for order_item in food_order.foodorderitem_set.all():
+                items.append({
+                    'item_id': order_item.item.id,
+                    'name': order_item.item.name,
+                    'category': order_item.item.get_category_name(),
+                    'quantity': order_item.quantity,
+                    'unit_price': str(order_item.price_at_time),
+                    'subtotal': str(order_item.subtotal)
+                })
+            
+            commands_data.append({
+                'order_id': food_order.id,
+                'total': str(food_order.total_amount),
+                'status': food_order.get_status_display(),
+                'status_code': food_order.status,
+                'pickup_time': food_order.pickup_time.strftime('%H:%M') if food_order.pickup_time else None,
+                'special_instructions': food_order.special_instructions,
+                'created_at': food_order.created_at.strftime('%Y-%m-%d %H:%M'),
+                'items': items
+            })
+        
+        return commands_data
+    
+    def get_total_commands_amount(self, obj):
+        """Calculate total amount of all commands"""
+        if not obj.reservation:
+            return "0.00"
+        
+        total = obj.reservation.food_orders.aggregate(
+            total=models.Sum('total_amount')
+        )['total'] or 0
+        
+        return str(total)
