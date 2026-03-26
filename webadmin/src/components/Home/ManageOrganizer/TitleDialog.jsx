@@ -1,4 +1,13 @@
-import { CalendarMonth, Cancel, Edit, Email, Person, Phone, Save } from '@mui/icons-material';
+import {
+  CalendarMonth,
+  Cancel,
+  Delete,
+  Edit,
+  Email,
+  Person,
+  Phone,
+  Save,
+} from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -16,6 +25,8 @@ import {
 import { getRoleDisplay } from '../../../utils/getRoleDisplay';
 import { getRoleColor } from '../../../utils/getRoleColor';
 import { formatDate } from '../../../utils/formatDate';
+import { Android12Switch } from '../../../ui/SwitchCustomed';
+import { useState } from 'react';
 
 const TitleDialog = ({
   orgData,
@@ -28,8 +39,12 @@ const TitleDialog = ({
   loading,
   isActive,
   handleStatusChange,
+  isDelete = false,
+  changeDelete,
+  handleRestore
 }) => {
   const roleColor = getRoleColor(orgData?.role);
+
   return (
     <Box sx={{ p: 3, pr: 6 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -50,36 +65,51 @@ const TitleDialog = ({
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Chip
-              label={getRoleDisplay(orgData?.role)}
-              size="small"
-              sx={{
-                bgcolor: roleColor.bg,
-                color: '#fff',
-                fontWeight: 500,
-                mt: 0.5,
-              }}
-            />
-              <Typography variant='subtitle1' fontSize={12}>
-                Status de compte: {orgData.is_active ? 
-                  <Chip label='Activé' color='success' variant='outlined' size='small'/>
-                    : <Chip label='Desactivé' color='error' variant='outlined'/>
-                }
+                label={getRoleDisplay(orgData?.role)}
+                size="small"
+                sx={{
+                  bgcolor: roleColor.bg,
+                  color: '#fff',
+                  fontWeight: 500,
+                  mt: 0.5,
+                }}
+              />
+              <Typography variant="subtitle1" fontSize={12}>
+                Status de compte:{' '}
+                {orgData.is_active ? (
+                  <Chip label="Activé" color="success" variant="outlined" size="small" />
+                ) : (
+                  <Chip label="Desactivé" color="error" variant="outlined" />
+                )}
               </Typography>
             </Box>
-            
           </Box>
-          
         </Box>
-        
-        <Button
-          variant="outlined"
-          startIcon={isEditing ? <Cancel /> : <Edit />}
-          onClick={() => (isEditing ? handleCancelEdit() : setIsEditing(true))}
-          size="small"
-          sx={{ borderRadius: 2 }}
-        >
-          {isEditing ? 'Annuler' : 'Modifier'}
-        </Button>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={isEditing ? <Cancel fontSize="small" /> : <Edit />}
+            onClick={() => (isEditing ? handleCancelEdit() : setIsEditing(true))}
+            size="small"
+            sx={{ borderRadius: 2 }}
+          >
+            {isEditing ? 'Annuler' : 'Modifier'}
+          </Button>
+          {!orgData.is_deleted && (
+            <Button
+              startIcon={<Delete fontSize="small" />}
+              size="small"
+              variant="contained"
+              onClick={changeDelete}
+            >
+              Delete
+            </Button>
+          )}
+          {orgData.is_deleted && (
+            <Button variant='contained' size='small' onClick={handleRestore}>Restaurer</Button>
+          )}
+        </Box>
       </Box>
 
       {!isEditing ? (
@@ -119,7 +149,6 @@ const TitleDialog = ({
                 InputProps={{
                   startAdornment: <Person sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />,
                 }}
-                
               />
             </Grid>
             <Grid>
@@ -148,9 +177,9 @@ const TitleDialog = ({
               />
             </Grid>
             <Grid>
-               <FormControlLabel
+              <FormControlLabel
                 control={
-                  <Switch
+                  <Android12Switch
                     checked={isActive}
                     onChange={handleStatusChange}
                     color="primary"

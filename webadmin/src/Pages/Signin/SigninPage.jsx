@@ -15,10 +15,10 @@ const SigninPage = () => {
     password: '',
     showPassword: false,
   });
-  
+
   const navigateTo = useNavigate();
   axios.defaults.withCredentials = true;
-  
+
   const postData = (data) => {
     const backendUrl = `${apiUrl}/accounts`;
     console.log('received data', data);
@@ -33,7 +33,7 @@ const SigninPage = () => {
       }
     );
   };
-  
+
   const handleInput = (e) => {
     const { value, name } = e.target;
     setFormData((prev) => ({
@@ -53,13 +53,13 @@ const SigninPage = () => {
     e.preventDefault();
     console.log('clicked');
     console.log({ ...formData });
-    
+
     setLoading(true);
     setOpenAlert(false);
-    
+
     try {
       const response = await postData({ ...formData });
-      
+
       if (!response.data) {
         console.log('error to log in');
         setOpenAlert(true);
@@ -68,7 +68,7 @@ const SigninPage = () => {
         setLoading(false);
         return;
       }
-      
+
       if (!response.data.success) {
         const mess = response.data.message;
         console.log(mess);
@@ -78,64 +78,33 @@ const SigninPage = () => {
         setLoading(false);
         return;
       }
-      
+
       console.log('log successfully');
       console.log(response.data);
       setOpenAlert(true);
       setMessage('Login successful! Redirecting...');
       setTypeMess('success');
-      
+
       setTimeout(() => {
         navigateTo('/home');
       }, 1500);
-      
     } catch (error) {
       console.log('Server error:', error);
-      
-      let errorMessage = 'An error occurred. Please try again.';
-      
-      if (error.response) {
-        console.log('Error response data:', error.response.data);
-        console.log('Error response status:', error.response.status);
-        
-        if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } 
-        else if (error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
-        }
-        else if (error.response.status === 401) {
-          errorMessage = 'Invalid email or password.';
-        } 
-        else if (error.response.status === 403) {
-          errorMessage = 'You do not have permission to access this resource.';
-        }
-        else if (error.response.status === 400) {
-          errorMessage = 'Please provide both email and password.';
-        }
-        else if (error.response.status === 404) {
-          errorMessage = 'User not found. Please check your credentials.';
-        }
-        
-      } else if (error.request) {
-        errorMessage = 'No response from server. Please check your connection.';
-        console.log('Error request:', error.request);
-      } else {
-        errorMessage = error.message || 'An error occurred. Please try again.';
-      }
-      
+
+      const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
+
       setOpenAlert(true);
       setMessage(errorMessage);
       setTypeMess('error');
       setLoading(false);
     }
   };
-  
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setOpenAlert(false);
   };
-  
+
   return (
     <Container
       maxWidth="sm"
@@ -155,9 +124,9 @@ const SigninPage = () => {
         autoHideDuration={5000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleClose} 
-          severity={typeMess} 
+        <Alert
+          onClose={handleClose}
+          severity={typeMess}
           variant="filled"
           sx={{ width: '100%', minWidth: '300px' }}
         >
@@ -176,7 +145,7 @@ const SigninPage = () => {
           </Button>
         </Link>
       </Box>
-      
+
       <SigninForm
         handleInput={handleInput}
         formData={formData}

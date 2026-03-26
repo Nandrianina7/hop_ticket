@@ -124,61 +124,59 @@ class EventOrganizerRegisterView(APIView):
 def admin_login(request):
     email = request.data.get('email')
     password = request.data.get('password')
-    print('Incoming request', request.data)
+    if not email or not password:
+        return Response(
+            {"message": "Email and password are required", "success": False},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     try:
-        if not all([email, password]):
-            print('missing required field')
-            return Response({"message": "All are required", "success": False}, 
-                            status=status.HTTP_400_BAD_REQUEST)
-        
         user = models.Admin.objects.get(email=email)
-
-        if not user.is_active:
-            return Response({
-                'message': 'This accounts has been desactivated. Please contact the Amdin',
-                'success': False,
-            }, status=status.HTTP_401_UNAUTHORIZED)
-
-
-        if user.check_password(password):
-            print('user logged')
-            refresh = RefreshToken.for_user(user)
-            response = Response({
-                "message": "Admin logged successfully",
-                "admin_id": user.id,
-                "user_role": "admin",
-                "success": True
-                },status=status.HTTP_200_OK)
-            response.set_cookie(
-                key='access_token',
-                value=str(refresh.access_token),
-                httponly=False,
-                secure=False,
-                samesite='Lax',
-                max_age=60*2
-            )
-            response.set_cookie(
-                key='refresh_token',
-                value=str(refresh),
-                httponly=False,
-                secure=False,
-                samesite='Lax',
-                max_age=60 * 60 *24 * 7
-            )
-            response.set_cookie(
-                key="user_role",
-                value=user.role,
-                httponly=False,
-                secure=False,
-                samesite="Lax",
-                max_age=60 * 60 * 24 * 7
-            )
-            return response
-        else:
-            return Response({"message": "Incorrect password", "success": False})
     except models.Admin.DoesNotExist:
-        pass
-    return Response({'message': 'Invalid credentials', 'success': False})
+        return Response(
+            {"message": "Invalid email or password", "success": False},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if not user.is_active or  user.is_deleted:
+        return Response(
+            {"message": "Account is deactivated. Contact admin.", "success": False},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    if not user.check_password(password):
+        return Response(
+            {"message": "Invalid email or password", "success": False},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    refresh = RefreshToken.for_user(user)
+
+    response = Response({
+        "message": "Login successful",
+        "admin_id": user.id,
+        "user_role": "admin",
+        "success": True
+    }, status=status.HTTP_200_OK)
+
+    response.set_cookie(
+        key='access_token',
+        value=str(refresh.access_token),
+        httponly=False,   
+        secure=False,    
+        samesite='Lax',
+        max_age=60 * 15 
+    )
+
+    response.set_cookie(
+        key='refresh_token',
+        value=str(refresh),
+        httponly=False,
+        secure=False,
+        samesite='Lax',
+        max_age=60 * 60 * 24 * 7
+    )
+    return response
+
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 class CookieRefreshView(TokenRefreshView):
@@ -449,6 +447,71 @@ class UpdateOrganizerDataView(APIView):
         return re.match(pattern, phone) is not None
     
     
+class SoftDeleteOrganizer(APIView):
+    def put(self, request, pk):
+        try:
+            user = request.user
+
+            if not user.is_superuser:
+                return Response({
+                    'success': False,
+                    'message': 'Not authorized'
+                }, status=403)
+
+            user_delete = Admin.objects.get(id=pk)
+
+            if user_delete.is_superuser:
+                return Response({
+                    'success': False,
+                    'message': 'Cannot delete superadmin'
+                }, status=400)
+            user_delete.is_deleted = True
+            user_delete.save()
+            models.DeletedAccount.objects.create(
+                user=user_delete,
+                deleted_by=user
+            )
+
+            return Response({
+                'success': True,
+                'message': 'Organizer deleted successfully'
+            })
+
+        except Admin.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'User not found'
+            }, status=404)
+class RestorDeletedOrganizer(APIView):
+    def put(self, request, pk):
+        try:
+            user = request.user
+
+            if not user.is_superuser:
+                return Response({
+                    'success': False,
+                    'message': 'Not authorized'
+                }, status=403)
+
+            user_delete = Admin.objects.get(id=pk)
+
+            user_delete.is_deleted = False
+            user_delete.save()
+            user_to_restore = models.DeletedAccount.objects.filter(user=pk)
+
+            user_to_restore.delete()
+
+            return Response({
+                'success': True,
+                'message': 'Organizer restored successfully'
+            })
+
+        except Admin.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'User not found'
+            }, status=404)
+
 # mobile
 class CustomerRegisterView(APIView):
     def post(self, request):

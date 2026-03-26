@@ -25,6 +25,8 @@ urlpatterns = [
   path('org_lst/', views.EventOrganizerListView.as_view(), name='organizer_list'),
   path('org_data/<int:pk>/', views.SelectedOrganizerView.as_view(), name='organizer data'),
   path('update_organizer/<int:pk>/', views.UpdateOrganizerDataView.as_view(), name='update_organizer_info'),
+  path('delete_org/<int:pk>/', views.SoftDeleteOrganizer.as_view(), name='delete_organizer'),
+  path('restore_org/<int:pk>/', views.RestorDeletedOrganizer.as_view(), name='restore user'),
   
   # mobile urls
   path('mobile/register/', CustomerRegisterView.as_view(), name='customer-register'),

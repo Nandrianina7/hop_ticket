@@ -58,6 +58,7 @@ class AdminSerialiser(serializers.ModelSerializer):
         "total_halls",
         "total_movies_with_sessions",
         'is_active',
+        'is_deleted'
 
     ]
 

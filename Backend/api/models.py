@@ -52,6 +52,10 @@ class EventPlan(models.Model):
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+class EventManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(organizer__is_deleted=False)
+
 class Event(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending Approval'),
@@ -93,6 +97,7 @@ class Event(models.Model):
         default='pending',
         help_text="Event approval status"
     )
+    objects = EventManager()
 
     class Meta:
         ordering = ['-date']
@@ -258,7 +263,10 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment {self.id}: {self.status} - {self.amount}"  
 
-
+class VenuePlanManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(organizer__is_deleted=False)
+    
 class VenuePlan(models.Model):
     organizer = models.ForeignKey(
         Admin,
@@ -270,7 +278,7 @@ class VenuePlan(models.Model):
     elements = models.JSONField() 
     metadata = models.JSONField(default=dict) 
     created_at = models.DateTimeField(auto_now_add=True)
-
+    objects = VenuePlanManager()
     def __str__(self):
         return f"Venue Plan {self.id} by {self.organizer.email}"
     
@@ -301,7 +309,10 @@ class ViewEventLocation(models.Model):
         verbose_name = 'Event Location (view)'
         verbose_name_plural = 'Event Locations (view)'
         ordering = ['-date']
-        
+
+class FoodManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by__is_deleted=False)
 class FoodItem(models.Model):
     CATEGORY_CHOICES = [
         ('POPCORN', 'Popcorn'),
@@ -326,6 +337,7 @@ class FoodItem(models.Model):
         on_delete=models.CASCADE, 
         related_name='food_items'
     )
+    objects = FoodManager()
     class Meta:
         ordering = ['category', 'name']
 
