@@ -132,6 +132,14 @@ def admin_login(request):
                             status=status.HTTP_400_BAD_REQUEST)
         
         user = models.Admin.objects.get(email=email)
+
+        if not user.is_active:
+            return Response({
+                'message': 'This accounts has been desactivated. Please contact the Amdin',
+                'success': False,
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+
         if user.check_password(password):
             print('user logged')
             refresh = RefreshToken.for_user(user)
@@ -171,7 +179,8 @@ def admin_login(request):
     except models.Admin.DoesNotExist:
         pass
     return Response({'message': 'Invalid credentials', 'success': False})
- 
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
 class CookieRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh_token')
@@ -181,30 +190,62 @@ class CookieRefreshView(TokenRefreshView):
                 {"error": "No refresh token found"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-            
-        request.data['refresh'] = refresh_token
-        response = super().post(request, *args, **kwargs)
         
-        if response.status_code == 200:
-            response.set_cookie(
-                key='access_token',
-                value=response.data['access'],
-                httponly=False,
-                secure=False,
-                samesite='Lax',
-                max_age=60 * 15
-            )
-            if 'refresh' in response.data:
+        try:
+            from rest_framework_simplejwt.tokens import RefreshToken
+            refresh = RefreshToken(refresh_token)
+            user_id = refresh.payload.get('user_id')
+
+            if user_id:
+                try:
+                    user = models.Admin.objects.get(id=user_id)
+
+                    if not user.is_active:
+                        return Response({
+                            'error': 'Account desactivated',
+                            'message': 'This account has been desactivated.Please contact the administrator',
+                            'success': False
+                        }, status=status.HTTP_401_UNAUTHORIZED)
+                except models.Admin.DoesNotExist:
+                    return Response({
+                        "error": 'Not found',
+                        "message": 'USer not found'
+                    }, status=status.HTTP_404_NOT_FOUND)
+
+            request.data['refresh'] = refresh_token
+            response = super().post(request, *args, **kwargs)
+        
+            if response.status_code == 200:
                 response.set_cookie(
-                    key='refresh_token',
-                    value=response.data['refresh'],
+                    key='access_token',
+                    value=response.data['access'],
                     httponly=False,
                     secure=False,
                     samesite='Lax',
-                    max_age=60 * 60 * 24 * 7
+                    max_age=60 * 15
                 )
+                if 'refresh' in response.data:
+                    response.set_cookie(
+                        key='refresh_token',
+                        value=response.data['refresh'],
+                        httponly=False,
+                        secure=False,
+                        samesite='Lax',
+                        max_age=60 * 60 * 24 * 7
+                    )
                 
-        return response
+            return response
+        except TokenError as e:
+            return Response({
+                'message': 'Token refresh error',
+                'success': False,
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            return Response({
+                'message': 'Server error',
+                'error': str(e),
+                'success': False
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 @api_view(['GET'])

@@ -7,11 +7,12 @@ import {
   InputLabel,
   Typography,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import { Mail, Visibility, VisibilityOff } from '@mui/icons-material';
 import FormButton from '../../ui/FormButton';
 
-const SigninForm = ({ formData, showPassword, handleInput, handleSubmit, user_type }) => {
+const SigninForm = ({ formData, showPassword, handleInput, handleSubmit, user_type, loading }) => {
   return (
     <Paper
       elevation={3}
@@ -87,7 +88,7 @@ const SigninForm = ({ formData, showPassword, handleInput, handleSubmit, user_ty
         >
           {/* <a href="">Forgot password?</a> */}
         </Box>
-        <FormButton text="Se connecter" onClick={handleSubmit} />
+        <FormButton text={loading ? <CircularProgress size={24} />: "Se connecter"} onClick={handleSubmit} />
       </Box>
     </Paper>
   );
