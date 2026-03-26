@@ -42,6 +42,7 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False) 
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     
@@ -101,3 +102,16 @@ class AuthToken(models.Model):
         self.access_expiry = timezone.now() + timedelta(days=30)
         self.refresh_expiry = timezone.now() + timedelta(days=90)
         self.save()
+
+class DeletedAccount(models.Model):
+    user = models.ForeignKey(
+        Admin,
+        on_delete=models.CASCADE,
+        related_name='deleted_users'
+    )
+    deleted_by = models.ForeignKey(
+        Admin,
+        on_delete=models.CASCADE,
+        related_name='deleted_by_admin'
+    )
+    deleted_on = models.DateTimeField(auto_now_add=True)

@@ -8,8 +8,10 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Typography,
+  Button,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Close as CloseIcon, Delete, WarningAmber } from '@mui/icons-material';
 import api from '../../../api/api';
 import { useEffect, useState } from 'react';
 import { getRoleColor } from '../../../utils/getRoleColor';
@@ -21,6 +23,7 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [isDelete, setIsDelete] = useState(false);
   const [editFormData, setEditFormData] = useState({
     full_name: '',
     email: '',
@@ -32,6 +35,9 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
     severity: 'success',
   });
 
+  const changeIsDelete = () => {
+    setIsDelete(true);
+  };
   const fetchOrganizerData = async (id) => {
     setLoading(true);
     try {
@@ -63,9 +69,13 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
   const updateOrganizer = async () => {
     setLoading(true);
     try {
-      const res = await api.put(`/accounts/update_organizer/${org_id}/`, {...editFormData, is_active: isActive}, {
-        withCredentials: true,
-      });
+      const res = await api.put(
+        `/accounts/update_organizer/${org_id}/`,
+        { ...editFormData, is_active: isActive },
+        {
+          withCredentials: true,
+        }
+      );
 
       if (res.data.success) {
         showSnackbar('Informations mises à jour avec succès', 'success');
@@ -83,6 +93,45 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
       setLoading(false);
     }
   };
+
+  const handleDelete = async() => {
+    try {
+      const res = await api.put(`/accounts/delete_org/${org_id}/`, {}, { withCredentials: true });
+
+      if (!res.data) {
+        showSnackbar('echec de suppression', 'error');
+        return;
+      }
+      await fetchOrganizerData(org_id)
+      showSnackbar('Compte supprimer', 'success');
+      console.log('deleted');
+    } catch (error) {
+      if (error.response?.data) {
+        showSnackbar(error.response.data.message);
+      } else {
+        showSnackbar('Erreur de la suppression', 'Error');
+      }
+    }
+  }
+
+  const handleRestore = async() => {
+    try {
+      const res = await api.put(`/accounts/restore_org/${org_id}/`, { }, { withCredentials: true });
+      if (!res.data) {
+        showSnackbar('echec de restoration', 'error');
+        return;
+      }
+      await fetchOrganizerData(org_id)
+      showSnackbar('Compte restorer', 'success');
+      console.log('Restored');
+    } catch (error) {
+      if (error.response?.data) {
+        showSnackbar(error.response.data.message);
+      } else {
+        showSnackbar('Erreur de la restoration', 'Error');
+      }
+    }
+  }
 
   const handleEditChange = (field) => (event) => {
     setEditFormData({
@@ -109,12 +158,12 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
   };
 
   const handleStatusChange = (event) => {
-    setIsActive(event.target.checked)
-  }
+    setIsActive(event.target.checked);
+  };
   useEffect(() => {
     if (orgData) {
       setIsActive(orgData.is_active);
-    };
+    }
   }, [orgData]);
 
   useEffect(() => {
@@ -174,6 +223,8 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
             loading={loading}
             isActive={isActive}
             handleStatusChange={handleStatusChange}
+            changeDelete={changeIsDelete}
+            handleRestore={handleRestore}
           />
           <IconButton
             onClick={onClose}
@@ -190,6 +241,63 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
 
         <DialogContent sx={{ p: 0 }}>
           <ContentDialog orgData={orgData} />
+          {isDelete && !orgData?.is_deleted &&(
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  p: 1,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'error.main',
+                  mb: 2,
+                  width: '500px',
+                  animation: 'fadeIn 0.3s ease-in-out',
+                  '@keyframes fadeIn': {
+                    from: { opacity: 0, transform: 'translateY(-10px)' },
+                    to: { opacity: 1, transform: 'translateY(0)' },
+                  },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <WarningAmber sx={{ color: 'error.main', fontSize: 32 }} />
+                  <Typography variant="h6" fontWeight={600} color="error.dark">
+                    Confirmation de suppression
+                  </Typography>
+                </Box>
+
+                <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+                  Voulez-vous vraiment supprimer cet utilisateur ?
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Cette action entraîne la suppression de toutes les données associées à cet
+                  utilisateur. Cette opération est irréversible.
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                  <Button
+                    onClick={() => setIsDelete(false)}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="error"
+                    sx={{ borderRadius: 2 }}
+                    startIcon={<Delete />}
+                    onClick={handleDelete}
+                  >
+                    Confirmer la suppression
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
 

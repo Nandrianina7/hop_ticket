@@ -12,7 +12,12 @@ from django.db.models import Sum
 
 USER_MODEL = settings.AUTH_USER_MODEL
 
-
+class CinemaManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            organizer__is_deleted=False
+        )
+    
 class Cinema(models.Model):
     name = models.CharField(max_length=100)
     address = models.TextField()
@@ -27,13 +32,18 @@ class Cinema(models.Model):
         related_name="cinemas",
         limit_choices_to={'role': 'organizer'}
     )
+    objects = CinemaManager()
     class Meta:
         ordering = ['city', 'name']
 
     def __str__(self):
         return f"{self.name} ({self.city})"
 
-
+class CinemaHallManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            cinema__organizer__is_deleted=False
+        )
 class CinemaHall(models.Model):
     cinema = models.ForeignKey(Cinema, on_delete=models.CASCADE, related_name='halls')
     name = models.CharField(max_length=50)
@@ -43,7 +53,7 @@ class CinemaHall(models.Model):
         default='2D'
     )
     base_price = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('0.00'))
-
+    objects = CinemaHallManager()
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['cinema', 'name'], name='unique_hall_per_cinema'),
@@ -52,7 +62,12 @@ class CinemaHall(models.Model):
     def __str__(self):
         return f"{self.cinema.name} - {self.name}"
 
-
+class MovieManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            created_by__is_deleted=False
+        )
+    
 class Movie(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -82,6 +97,7 @@ class Movie(models.Model):
         blank=True,
         related_name="created_movies"
     )
+    objects = MovieManager()
     class Meta:
         ordering = ['-release_date', 'title']
 
@@ -547,6 +563,9 @@ class RestaurantItemCategory(models.Model):
     def __str__(self):
         return self.name
 
+class RestaurantManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by__is_deleted=False)
 class RestaurantItem(models.Model):
     CATEGORY_CHOICES = [
         ('POPCORN', 'Popcorn'),
@@ -578,6 +597,8 @@ class RestaurantItem(models.Model):
         on_delete=models.CASCADE, 
         related_name='snack_items'
     )
+
+    objects = RestaurantManager()
     class Meta:
         ordering = ['category', 'name']
 

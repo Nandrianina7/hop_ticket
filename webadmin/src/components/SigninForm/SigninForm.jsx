@@ -88,7 +88,10 @@ const SigninForm = ({ formData, showPassword, handleInput, handleSubmit, user_ty
         >
           {/* <a href="">Forgot password?</a> */}
         </Box>
-        <FormButton text={loading ? <CircularProgress size={24} />: "Se connecter"} onClick={handleSubmit} />
+        <FormButton
+          text={loading ? <CircularProgress size={24} /> : 'Se connecter'}
+          onClick={handleSubmit}
+        />
       </Box>
     </Paper>
   );
