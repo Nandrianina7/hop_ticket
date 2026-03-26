@@ -18,8 +18,12 @@ import { Event, ExpandMore, Movie, Settings, Visibility } from '@mui/icons-mater
 import { stringToColor } from '../../../utils/stringToColor';
 import { Link } from 'react-router-dom';
 import CinemaInfo from './CinemaInfo';
+import { useState } from 'react';
+import ManageOrganizer from '../ManageOrganizer/ManageOrganizer';
 
 const OrganizerCard = ({ org, expandedOrg, handleExpandClick }) => {
+  const [id, setId] = useState(null);
+  const [open, setOpen] = useState(false);
   const getRoleDisplay = (role) => {
     switch (role) {
       case 'organizer':
@@ -30,7 +34,15 @@ const OrganizerCard = ({ org, expandedOrg, handleExpandClick }) => {
         return role;
     }
   };
+  const handleManageUser = (user_id) => {
+    setId(user_id);
+    setOpen(true);
+  };
 
+  const handleClose = () => {
+    setOpen(false);
+    setId(null);
+  };
   return (
     <Card
       elevation={2}
@@ -128,9 +140,9 @@ const OrganizerCard = ({ org, expandedOrg, handleExpandClick }) => {
               >
                 Voir détails
               </Button>
-              <Tooltip title='Contrôler cet utilisateur'>
-                <IconButton size='small'>
-                  <Settings fontSize='small'/>
+              <Tooltip title="Contrôler cet utilisateur">
+                <IconButton size="small" onClick={() => handleManageUser(org.id)}>
+                  <Settings fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -173,6 +185,7 @@ const OrganizerCard = ({ org, expandedOrg, handleExpandClick }) => {
           </Collapse>
         )}
       </CardContent>
+      <ManageOrganizer open={open} onClose={handleClose} org_id={id} />
     </Card>
   );
 };

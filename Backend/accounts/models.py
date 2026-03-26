@@ -40,7 +40,7 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='organizer')
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False) 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

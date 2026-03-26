@@ -281,6 +281,132 @@ class EventOrganizerListView(APIView):
             'message': 'Successfully loaded'
         }, status=status.HTTP_200_OK)
     
+class SelectedOrganizerView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, pk):
+        user_email = request.user
+        user = Admin.objects.get(email=user_email)
+
+        if not user.is_superuser:
+            return Response({
+                'message': 'This user is not authorized',
+                'success': False,
+            })
+        organizer_data = Admin.objects.get(id=pk)
+        serializer = AdminSerialiser(organizer_data)
+
+        return Response({
+            'message': 'Organizer data loaded',
+            'success': True,
+            'data': serializer.data
+        })
+
+class UpdateOrganizerDataView(APIView):
+    def put(self, request, pk):
+        user_email = request.user
+        try:
+            user = Admin.objects.get(email=user_email)
+        except Admin.DoesNotExist:
+            return Response({
+                'message': 'User not found',
+                'success': False,
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if not user.is_superuser:
+            return Response({
+                'message': 'This user is not authorized',
+                'success': False,
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        email = request.data.get('email')
+        phone = request.data.get('phone')
+        full_name = request.data.get('full_name')
+        is_active = request.data.get('is_active')
+
+        try:
+            organizer = Admin.objects.get(id=pk)
+        except Admin.DoesNotExist:
+            return Response({
+                'message': 'Organizer not found',
+                'success': False,
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        if email and email != organizer.email:
+            if Admin.objects.filter(email=email).exclude(id=pk).exists():
+                return Response({
+                    'message': 'This email is already in use',
+                    'success': False,
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            if not self.is_valid_email(email):
+                return Response({
+                    'message': 'Invalid email format',
+                    'success': False,
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            organizer.email = email
+
+        if phone and phone != organizer.phone:
+            if Admin.objects.filter(phone=phone).exclude(id=pk).exists():
+                return Response({
+                    'message': 'This phone number is already in use',
+                    'success': False,
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not self.is_valid_phone(phone):
+                return Response({
+                    'message': 'Invalid phone number format',
+                    'success': False,
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            organizer.phone = phone
+
+        if full_name:
+            organizer.full_name = full_name
+        if organizer.id == user.id and not is_active:
+            return Response({
+                'message': 'You cannot deactivate your own account',
+                'success': False,
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        organizer.is_active = is_active
+
+        try:
+            organizer.save()
+  
+            return Response({
+                'message': 'Organizer updated successfully',
+                'success': True,
+                'data': {
+                    'id': organizer.id,
+                    'full_name': organizer.full_name,
+                    'email': organizer.email,
+                    'phone': organizer.phone,
+                    'role': organizer.role,
+                    'is_superuser': organizer.is_superuser,
+                    'created_at': organizer.created_at,
+                }
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'message': f'Error updating organizer: {str(e)}',
+                'success': False,
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def is_valid_email(self, email):
+        """Validate email format"""
+        import re
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(pattern, email) is not None
+
+    def is_valid_phone(self, phone):
+        """Validate phone number format"""
+        import re
+        pattern = r'^[\d\s\+\-\(\)]{8,}$'
+        return re.match(pattern, phone) is not None
+    
     
 # mobile
 class CustomerRegisterView(APIView):
