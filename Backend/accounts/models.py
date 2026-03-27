@@ -115,3 +115,27 @@ class DeletedAccount(models.Model):
         related_name='deleted_by_admin'
     )
     deleted_on = models.DateTimeField(auto_now_add=True)
+
+class Notifications(models.Model):
+    notif_for = models.ForeignKey(
+        Admin, 
+        on_delete=models.CASCADE, 
+        related_name='notification_for_admin'
+    )
+    content = models.CharField(max_length=500)
+    is_read = models.BooleanField(default=False, db_index=True)
+    notif_from = models.ForeignKey(
+        Admin,
+        on_delete=models.CASCADE,
+        related_name='notification_is_from',
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    target_id = models.IntegerField(default=0)
+    target_content = models.CharField(max_length=255, blank=True, null=True)
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.notif_from} -> {self.notif_for} : {self.content}"

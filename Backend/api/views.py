@@ -13,7 +13,7 @@ from . import serializers
 import logging
 from . import models
 from rest_framework import generics
-from accounts.models import Admin, Customer
+from accounts.models import Admin, Customer, Notifications
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -194,8 +194,20 @@ def add_addEvent(request):
     if not serializer.is_valid():
       print(f'Error {serializer.errors}')
       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     event = serializer.save(tickets_sold=0)
+    superusers = Admin.objects.filter(is_superuser=True)
+    notifications = [
+        Notifications(
+            content="Des nouvelles evenement ajouter.",
+            notif_for=superuser,
+            notif_from=admin,
+            target_content='event_approvation',
+            target_id=event.id
+        )
+                for superuser in superusers
+    ]
+    Notifications.objects.bulk_create(notifications)
     print('saved', event)
     return Response({
       "message": "Event created successfully",

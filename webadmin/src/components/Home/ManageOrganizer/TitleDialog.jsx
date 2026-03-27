@@ -41,7 +41,7 @@ const TitleDialog = ({
   handleStatusChange,
   isDelete = false,
   changeDelete,
-  handleRestore
+  handleRestore,
 }) => {
   const roleColor = getRoleColor(orgData?.role);
 
@@ -107,7 +107,9 @@ const TitleDialog = ({
             </Button>
           )}
           {orgData.is_deleted && (
-            <Button variant='contained' size='small' onClick={handleRestore}>Restaurer</Button>
+            <Button variant="contained" size="small" onClick={handleRestore}>
+              Restaurer
+            </Button>
           )}
         </Box>
       </Box>

@@ -27,6 +27,8 @@ urlpatterns = [
   path('update_organizer/<int:pk>/', views.UpdateOrganizerDataView.as_view(), name='update_organizer_info'),
   path('delete_org/<int:pk>/', views.SoftDeleteOrganizer.as_view(), name='delete_organizer'),
   path('restore_org/<int:pk>/', views.RestorDeletedOrganizer.as_view(), name='restore user'),
+  path('notifications/', views.NotificationView.as_view(), name='list_notifications'),
+  path('notif_mark_read/<int:pk>/', views.UpdateNotificationReadView.as_view(), name='notification_read'),
   
   # mobile urls
   path('mobile/register/', CustomerRegisterView.as_view(), name='customer-register'),

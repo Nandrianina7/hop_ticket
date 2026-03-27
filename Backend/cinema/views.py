@@ -17,7 +17,7 @@ from .models import (
     Payment,
 )
 from api.models import Event, EventRating
-from accounts.models import Customer, Admin
+from accounts.models import Customer, Admin, Notifications
 from rest_framework import viewsets
 from django.db.models import Q
 from rest_framework.views import APIView
@@ -91,14 +91,27 @@ class MovieInserttView(APIView):
 
             if serializer.is_valid():
                 movie = serializer.save(created_by=user)
-
-                return Response(
-                    {
-                        "message": "Movie created successfully",
-                        "data": MovieSerializer(movie).data,
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
+                if not user.is_superuser:
+                    superusers = Admin.objects.filter(is_superuser=True)
+                    notifications = [
+                    Notifications(
+                        content="Nouveau film ajouter.",
+                        notif_for=superuser,
+                        notif_from=user,
+                        target_content='cinema_approvation',
+                        target_id=movie.id
+                    )
+                    for superuser in superusers
+                    ]
+                    Notifications.objects.bulk_create(notifications)
+                    
+                    return Response(
+                        {
+                            "message": "Movie created successfully",
+                            "data": MovieSerializer(movie).data,
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
             else:
                 print(serializer.errors)
                 return Response(

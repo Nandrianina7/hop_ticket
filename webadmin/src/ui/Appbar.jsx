@@ -9,21 +9,45 @@ import {
   Typography,
 } from '@mui/material';
 import { DarkMode, Notifications, WbSunny } from '@mui/icons-material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import hoplogo from '../assets/hoplogo.jpeg';
 import { useThemeContext } from '../ThemeContext';
 import UserProfile from '../Pages/UserProfile';
+import api from '../api/api';
+import NotificationBox from '../components/Home/NotificationBox/NoticationBox';
 
 const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { darkMode, toggleDarkMode } = useThemeContext();
   const open = Boolean(anchorEl);
-
+  const [anchorNot, setAnchorNot] = useState(null);
+  const openNot = Boolean(anchorNot);
+  const [notification, setNotification] = useState([]);
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
+  const handleNotif = (event) => setAnchorNot(event.currentTarget);
   const capitalizeFirstLetter = (str = '') =>
     str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  const fetchNotification = async () => {
+    try {
+      const res = await api.get('/accounts/notifications/', { withCredentials: true });
+
+      if (!res.data) {
+        console.log('failed to fetch notification');
+        return;
+      }
+      console.log('Notification successfully loaded');
+      const data = res.data.data;
+      setNotification(data);
+      console.log('data', data);
+    } catch (error) {
+      console.log(error.response?.data?.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotification();
+  }, []);
 
   return (
     <AppBar
@@ -84,26 +108,26 @@ const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
           {/* DARK MODE TOGGLE */}
           <Tooltip title="Changer le mode">
             <IconButton onClick={toggleDarkMode} size="large">
-              {darkMode ? <DarkMode /> : <WbSunny />}
+              {darkMode ? <DarkMode fontSize="small" /> : <WbSunny fontSize="small" />}
             </IconButton>
           </Tooltip>
 
           {/* NOTIFICATIONS */}
-          {/* <Tooltip title="Notifications">
-            <IconButton size="large">
-              <Badge badgeContent={3} color="error">
-                <Notifications />
+          <Tooltip title="Notifications">
+            <IconButton size="small" onClick={handleNotif}>
+              <Badge badgeContent={notification.length} color="error">
+                <Notifications fontSize="small" />
               </Badge>
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
 
           {/* USER MENU */}
           <Tooltip title="Compte utilisateur">
             <IconButton size="small" onClick={handleMenu}>
               <Avatar
                 sx={{
-                  width: 36,
-                  height: 36,
+                  width: 30,
+                  height: 30,
                   bgcolor: 'primary.main',
                   fontSize: 16,
                   fontWeight: 600,
@@ -118,6 +142,13 @@ const Appbar = ({ cinema = { name: '' }, user = { role: '', name: '' } }) => {
 
       {/* ---- USER MENU MODAL ---- */}
       <UserProfile open={open} handleClose={handleClose} anchorEl={anchorEl} user={user} />
+      <NotificationBox
+        open={openNot}
+        anchorEl={anchorNot}
+        handleClose={() => setAnchorNot(null)}
+        data={notification}
+        fetchNotif={fetchNotification}
+      />
     </AppBar>
   );
 };

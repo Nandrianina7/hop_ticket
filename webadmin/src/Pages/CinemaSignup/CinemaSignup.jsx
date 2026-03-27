@@ -38,9 +38,10 @@ const CinemaSignup = () => {
       showSnackbar('Compte organisateur enregistré avec succès', 'success');
       console.log('Compte organisateur enregistré avec succès');
       setSignupSuccess(true);
-      setTimeout(() => {
-        setShowCinemaForm(true);
-      }, 500);
+      // setTimeout(() => {
+      //   setShowCinemaForm(true);
+      // }, 500);
+      navigate('/');
     } catch (error) {
       const errorMess = error instanceof Error ? error.message : 'Unknown error occurred';
       console.log(`error mess: ${errorMess}, detail -> ${error}`);
@@ -98,15 +99,15 @@ const CinemaSignup = () => {
             fontWeight: 'bold',
           }}
         >
-          Inscription réussie ! Veuillez ajouter les détails de votre cinéma.
+          Inscription réussie. Vous avez besoin d'approvation avant de continuer.
         </Box>
       </Fade>
 
-      <Zoom in={showCinemaForm} timeout={1000}>
+      {/* <Zoom in={showCinemaForm} timeout={1000}>
         <Box sx={{ width: '100%' }}>
           <CinemaForm onSave={onCreateCinema} />
         </Box>
-      </Zoom>
+      </Zoom> */}
       <Snackbar
         open={snackBar.open}
         onClose={() => setSnackBar({ ...snackBar, open: false })}
