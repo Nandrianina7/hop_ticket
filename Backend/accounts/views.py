@@ -10,7 +10,8 @@ from .serializers import (
     CustomerRegistrationSerializer, 
     CustomizerSerializer, 
     OrganizerRegistrationSerializer, 
-    EventOrganizerRegistrationSerializer
+    EventOrganizerRegistrationSerializer,
+    NotificationSerializer
 )
 from . import models
 from rest_framework.views import APIView
@@ -65,44 +66,30 @@ def register_admin(request):
     
 class OrganizerRegisterView(APIView):
     def post(self, request):
+        
         serializer = OrganizerRegistrationSerializer(data=request.data)
         print('receved data', request.data)
         if serializer.is_valid():
             organizer = serializer.save(role="organizer")
-            refresh = RefreshToken.for_user(organizer)
+            superusers = models.Admin.objects.filter(is_superuser=True)
+            notifications = [
+                models.Notifications(
+                    content="Nouvelle diffuseur de cinema a été enregistré. Une approbation est requise.",
+                    notif_for=admin,
+                    notif_from=organizer,
+                    target_content='signup_approvation'
+                )
+                for admin in superusers
+            ]
+
+            models.Notifications.objects.bulk_create(notifications)
             
             response = Response({
                 "message": "Organizer registered successfully",
                 "organizer_id": organizer.id,
                 "user_role": organizer.role,
                 "success": True,
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
             }, status=status.HTTP_201_CREATED)
-            response.set_cookie(
-                key="access_token",
-                value=str(refresh.access_token),
-                httponly=False,  # better True in production
-                secure=False,
-                samesite="Lax",
-                max_age=60 * 2
-            )
-            response.set_cookie(
-                key="refresh_token",
-                value=str(refresh),
-                httponly=False,
-                secure=False,
-                samesite="Lax",
-                max_age=60 * 60 * 24 * 7
-            )
-            response.set_cookie(
-                key="user_role",
-                value=organizer.role,
-                httponly=False,
-                secure=False,
-                samesite="Lax",
-                max_age=60 * 60 * 24 * 7
-            )
 
             return response
         print('error', serializer.errors)
@@ -114,12 +101,48 @@ class EventOrganizerRegisterView(APIView):
         serializer = EventOrganizerRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(role='event_organizer')
+            superusers = models.Admin.objects.filter(is_superuser=True)
+            notifications = [
+                models.Notifications(
+                    content="Nouvelle diffuseur de cinema a été enregistré. Une approbation est requise.",
+                    notif_for=admin,
+                    notif_from=serializer,
+                    target_content='signup_approvation',
+                    target_id=serializer.id
+                )
+                for admin in superusers
+            ]
+
+            models.Notifications.objects.bulk_create(notifications)
             return Response({'message': 'User register successfully'}, status=status.HTTP_201_CREATED)
         else:
             print('error',serializer.errors)
             return Response({'error': 'Failed to save user'}, status=status.HTTP_400_BAD_REQUEST)
     
+class UpdateNotificationReadView(APIView):
+    def put(self, request, pk):
+        try:
+            notif = models.Notifications.objects.get(id=pk)
 
+            notif.is_read = True
+            notif.save()
+            return Response({
+                'success': True,
+                'message': 'Notification mark as read',
+            }, status=status.HTTP_200_OK)
+        except models.Notifications.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Notification not found',
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': str(e),
+                'message': 'Server error',
+                'success': False
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        
 @api_view(['POST'])
 def admin_login(request):
     email = request.data.get('email')
@@ -149,6 +172,8 @@ def admin_login(request):
             {"message": "Invalid email or password", "success": False},
             status=status.HTTP_401_UNAUTHORIZED
         )
+    print('role', user.role)
+
     refresh = RefreshToken.for_user(user)
 
     response = Response({
@@ -170,6 +195,14 @@ def admin_login(request):
     response.set_cookie(
         key='refresh_token',
         value=str(refresh),
+        httponly=False,
+        secure=False,
+        samesite='Lax',
+        max_age=60 * 60 * 24 * 7
+    )
+    response.set_cookie(
+        key='user_role',
+        value=str(user.role),
         httponly=False,
         secure=False,
         samesite='Lax',
@@ -511,6 +544,26 @@ class RestorDeletedOrganizer(APIView):
                 'success': False,
                 'message': 'User not found'
             }, status=404)
+
+class NotificationView(APIView):
+    def get(self, request):
+        admin_email = request.user
+        admin = models.Admin.objects.get(email=admin_email)
+
+        if not admin.is_superuser:
+            return Response({
+                'message': 'Cet utilisateur n\'est pas un acces a cette action',
+                'success': False,
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        notifications = models.Notifications.objects.filter(is_read=False)
+        serializers = NotificationSerializer(notifications, many=True)
+
+        return Response({
+            'message': 'Notification loaded',
+            'success': True,
+            'data': serializers.data
+        }, status=status.HTTP_200_OK)
+    
 
 # mobile
 class CustomerRegisterView(APIView):

@@ -151,3 +151,21 @@ class EventOrganizerRegistrationSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+class NotificationSerializer(serializers.ModelSerializer):
+    organizer_email = serializers.CharField(source='notif_from.email', read_only=True)
+    organizer_id = serializers.IntegerField(source='notif_from.id', read_only=True)
+    class Meta:
+        model = models.Notifications
+        fields = [
+            'id',
+            'content',
+            'notif_for_id',
+            'notif_from',
+            'created_at',
+            'organizer_email',
+            'organizer_id',
+            'target_content',
+            'target_id',
+        ]
+        

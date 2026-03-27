@@ -94,7 +94,7 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
     }
   };
 
-  const handleDelete = async() => {
+  const handleDelete = async () => {
     try {
       const res = await api.put(`/accounts/delete_org/${org_id}/`, {}, { withCredentials: true });
 
@@ -102,7 +102,7 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
         showSnackbar('echec de suppression', 'error');
         return;
       }
-      await fetchOrganizerData(org_id)
+      await fetchOrganizerData(org_id);
       showSnackbar('Compte supprimer', 'success');
       console.log('deleted');
     } catch (error) {
@@ -112,16 +112,16 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
         showSnackbar('Erreur de la suppression', 'Error');
       }
     }
-  }
+  };
 
-  const handleRestore = async() => {
+  const handleRestore = async () => {
     try {
-      const res = await api.put(`/accounts/restore_org/${org_id}/`, { }, { withCredentials: true });
+      const res = await api.put(`/accounts/restore_org/${org_id}/`, {}, { withCredentials: true });
       if (!res.data) {
         showSnackbar('echec de restoration', 'error');
         return;
       }
-      await fetchOrganizerData(org_id)
+      await fetchOrganizerData(org_id);
       showSnackbar('Compte restorer', 'success');
       console.log('Restored');
     } catch (error) {
@@ -131,7 +131,7 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
         showSnackbar('Erreur de la restoration', 'Error');
       }
     }
-  }
+  };
 
   const handleEditChange = (field) => (event) => {
     setEditFormData({
@@ -241,7 +241,7 @@ const ManageOrganizer = ({ open, onClose, org_id, onUpdate }) => {
 
         <DialogContent sx={{ p: 0 }}>
           <ContentDialog orgData={orgData} />
-          {isDelete && !orgData?.is_deleted &&(
+          {isDelete && !orgData?.is_deleted && (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Box
                 sx={{
